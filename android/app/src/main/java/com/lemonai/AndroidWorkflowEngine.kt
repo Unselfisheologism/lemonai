@@ -112,14 +112,9 @@ class AndroidWorkflowEngine(private val context: Context) {
                         stepResult.put("result", executionResult)
                         if (!success) {
                             Log.e("AndroidWorkflowEngine", "Failed to execute MCP piece: $pieceName")
-                            // Don't break the workflow if node.js integration is not available, just mark step as failed
-                            if (executionResult == "Node.js integration not available") {
-                                Log.w("AndroidWorkflowEngine", "Node.js integration not available, continuing workflow")
-                            } else {
-                                result.put("success", false)
-                                result.put("error", "Failed to execute MCP piece: $pieceName - ${executionResult}")
-                                break
-                            }
+                            result.put("success", false)
+                            result.put("error", "Failed to execute MCP piece: $pieceName - ${executionResult}")
+                            break
                         }
                     }
                     else -> {
@@ -171,7 +166,13 @@ class AndroidWorkflowEngine(private val context: Context) {
     
     private fun executeMcpPiece(pieceName: String, action: String, params: String): String {
         // Call the NodeServiceHelper to execute the MCP piece
-        return NodeServiceHelper.executeMcpPieceSync(pieceName, action, params)
+        val result = NodeServiceHelper.executeMcpPieceSync(pieceName, action, params)
+        // If node.js integration is not available, return a valid JSON result to prevent workflow failure
+        return if (result == "Node.js integration not available") {
+            "{\"result\":\"Node.js integration not available\", \"status\":\"error\"}"
+        } else {
+            result
+        }
     }
 }
 
