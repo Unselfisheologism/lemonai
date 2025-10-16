@@ -17,8 +17,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         
         // Initialize nodejs-mobile for MCP background service
-        NodeServiceHelper.init(this)
-        NodeServiceHelper.startMcpServer()
+        try {
+            NodeServiceHelper.init(this)
+            NodeServiceHelper.startMcpServer()
+        } catch (e: Exception) {
+            // Handle the case where nodejs-mobile is not available
+            e.printStackTrace()
+        }
         
         // Initialize WebView
         webView = findViewById(R.id.webview)
