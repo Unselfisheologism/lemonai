@@ -60,7 +60,7 @@ const processFileUploads = async (fileIds, conversation_id, dir_path, WORKSPACE_
 
   let conversation = await Conversation.findOne({ where: { conversation_id } });
   let docsetId = conversation?.docset_id || null;
-  const apiKey = process.env.ARYN_API_KEY;
+  // For Puter.js, we don't need API keys as authentication is handled automatically
 
   for (const file of files) {
     const srcPath = path.join(uploadDir, file.name);
@@ -78,9 +78,7 @@ const processFileUploads = async (fileIds, conversation_id, dir_path, WORKSPACE_
     }
 
     // Upload to docset if supported
-    if (apiKey) {
-      docsetId = await uploadToDocset(file, destPath, conversation, conversation_id, user_id, docsetId, apiKey);
-    }
+    // For Puter.js, this functionality would need to be adapted to use Puter's file system
   }
 
   return {

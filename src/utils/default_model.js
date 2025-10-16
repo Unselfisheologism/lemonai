@@ -24,6 +24,19 @@ const _fetchDefaultModel = async (type = 'assistant') => {
   }
   const platform_name = platform.dataValues.name;
 
+ // Special handling for Puter platform - doesn't need API key or URL
+  if (platform_name.toLowerCase() === 'puter') {
+    return {
+      model_name,
+      platform_name,
+      api_key: null,
+      api_url: null,
+      base_url: null,
+      is_subscribe: false,
+      use_sdk: true // Flag to indicate SDK usage instead of HTTP requests
+    };
+  }
+
   return { model_name, platform_name, api_key, api_url, base_url: base_url, is_subscribe: false };
 };
 
@@ -37,9 +50,22 @@ const getDefaultModel = async (conversation_id) => {
 
   const api_key = platform.dataValues.api_key;
   const base_url = platform.dataValues.api_url
-  let api_url = platform.dataValues.api_url;
+ let api_url = platform.dataValues.api_url;
   api_url = platform.dataValues.api_url + '/chat/completions';
   const platform_name = platform.dataValues.name;
+
+ // Special handling for Puter platform - doesn't need API key or URL
+  if (platform_name.toLowerCase() === 'puter') {
+    return {
+      model_name,
+      platform_name,
+      api_key: null,
+      api_url: null,
+      base_url: null,
+      is_subscribe: platform.is_subscribe || false,
+      use_sdk: true // Flag to indicate SDK usage instead of HTTP requests
+    };
+  }
 
   return { model_name, platform_name, api_key, api_url, base_url: base_url, is_subscribe: platform.is_subscribe };
 };
@@ -57,6 +83,19 @@ const getCustomModel = async (model_id) => {
   let api_url = platform.dataValues.api_url;
   api_url = platform.dataValues.api_url + '/chat/completions';
   const platform_name = platform.dataValues.name;
+
+  // Special handling for Puter platform - doesn't need API key or URL
+  if (platform_name.toLowerCase() === 'puter') {
+    return {
+      model_name,
+      platform_name,
+      api_key: null,
+      api_url: null,
+      base_url: null,
+      is_subscribe: false,
+      use_sdk: true // Flag to indicate SDK usage instead of HTTP requests
+    };
+  }
 
   return { model_name, platform_name, api_key, api_url, base_url: base_url, is_subscribe: false };
 

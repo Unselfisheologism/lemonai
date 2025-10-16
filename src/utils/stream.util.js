@@ -5,12 +5,12 @@ const handleStream = (responseType = 'sse', response, debug = true) => {
   const stream = new PassThrough();
   let onTokenStream = new Function();
 
-  if (responseType === "openai-sse") {
-    // 设置响应头 response
+  if (responseType === "puter-sse") {
+    // 设置响应头 response for Puter.js
     response.type = "text/event-stream";
     response.set("Cache-Control", "no-cache");
     response.set("Connection", "keep-alive");
-    onTokenStream = (token, model = "gpt") => {
+    onTokenStream = (token, model = "gpt-5-nano") => {
       debug && process.stdout.write(token);
       if (typeof token === "object") {
         token = JSON.stringify(token);

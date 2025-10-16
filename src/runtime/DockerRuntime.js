@@ -191,11 +191,14 @@ class DockerRuntime {
         result = await this.read_file(action, uuid);
         break;
       case 'browser':
+        // For Puter.js, we don't pass traditional API keys
+        // Instead, we'll pass a configuration that indicates Puter.js should be used
         let model_info = await getDefaultModel(context.conversation_id)
         const llm_config = {
           model_name: model_info.model_name,
           api_url: model_info.base_url,
-          api_key: model_info.api_key
+          // Instead of passing the API key, we'll indicate to use Puter.js
+          use_puter_js: true
         }
         // llm_config.api_url='http://host.docker.internal:3002/api/agent/v1'
         action.params.llm_config = llm_config

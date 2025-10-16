@@ -222,6 +222,7 @@ router.post("/re_chat", async (ctx, next) => {
 
 
 
+
   ctx.body = stream;
   ctx.status = 200;
 });
@@ -320,7 +321,7 @@ function getMessagesContext(messages, pid) {
   // 再反转回来，保持从旧到新
   const finalContext = limited.reverse();
 
-  // 转换为 openai 标准格式
+  // 转换为 Puter.js 标准格式
   return finalContext.map(msg => ({
     role: msg.role,
     content: msg.content

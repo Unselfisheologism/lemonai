@@ -1,17 +1,19 @@
+
 /**
  * Text to Image 工具类
- * 使用 Google Gemini 2.5 Flash Image Preview API 实现文生图功能
+ * 使用 Puter.js AI API 实现文生图功能
  */
-
-const axios = require('axios');
+const { init } = require("@heyputer/puter.js/src/init.cjs"); // NODE JS ONLY
 const { getDefaultModel } = require('@src/utils/default_model');
 const createLLMInstance = require("@src/completion/llm.one.js");
 
 class TextToImageService {
     constructor() {
-        this.apiKey = process.env.GEMINI_API_KEY;
-        this.model = 'gemini-2.5-flash-image-preview';
-        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent';
+        // Initialize Puter.js - handles authentication automatically
+        // Initialize Puter.js with token from environment, or undefined if not set
+        // Puter.js handles authentication automatically when no token is provided in browser environments
+        const token = typeof process !== 'undefined' && process.env ? process.env.PUTER_AUTH_TOKEN : undefined;
+        this.puter = init(token);
         this.initialized = false;
     }
 
@@ -24,61 +26,34 @@ class TextToImageService {
             return;
         }
 
-        if (!this.apiKey) {
-            throw new Error('GEMINI_API_KEY is required');
-        }
+        // No explicit auth token required - Puter.js handles authentication automatically
+        // The token is optional and will be used if available
+        return;
 
         this.initialized = true;
-        console.log(`✅ Gemini ${this.model} API initialized successfully`);
+        console.log(`✅ Puter.js AI API initialized successfully`);
     }
 
     /**
-     * 发送 HTTP 请求到 Gemini API
-     * @param {Object} requestBody - 请求体
+     * 调用 Puter.js txt2img API 生成图片
+     * @param {string} prompt - 图片描述提示词
+     * @param {Object} options - 生成选项
      * @returns {Promise<Object>} API 响应
      */
-    async makeApiRequest(requestBody) {
+    async makeTxt2ImgRequest(prompt, options = {}) {
         try {
-            console.log(`🌐 Making API request to: ${this.apiUrl}`);
-            console.log(`📝 Request body:`, JSON.stringify(requestBody, null, 2));
+            console.log(`🌐 Generating image with Puter.js txt2img API: "${prompt.substring(0, 100)}..."`);
+            console.log(`📝 Options:`, JSON.stringify(options, null, 2));
             
-            const response = await axios.post(this.apiUrl, requestBody, {
-                headers: {
-                    'x-goog-api-key': this.apiKey,
-                    'Content-Type': 'application/json'
-                },
-                timeout: 300000 
-            });
-
-            console.log(`✅ Received response with status: ${response.status}`);
-            return response.data;
+            // Use Puter's txt2img API
+            const image = await this.puter.ai.txt2img(prompt, options);
+            
+            console.log(`✅ Image generated successfully`);
+            return image;
 
         } catch (error) {
-            console.error(`❌ API request failed:`, error.message);
-            
-            if (error.response) {
-                // API 返回了错误状态码
-                console.error(`Response status: ${error.response.status}`);
-                console.error(`Response data:`, error.response.data);
-                const errorMessage = error.response.data?.error?.message || error.response.statusText;
-                throw new Error(`API Error ${error.response.status}: ${errorMessage}`);
-            } else if (error.request) {
-                // 请求发送但没有收到响应
-                console.error(`Request config:`, error.config);
-                console.error(`Request code:`, error.code);
-                
-                // 检查是否是网络连接问题
-                if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-                    throw new Error(`Network connection failed: Unable to reach API endpoint`);
-                } else if (error.code === 'ECONNABORTED') {
-                    throw new Error('Request timeout - API took too long to respond');
-                } else {
-                    throw new Error(`Request failed: No response received (${error.code || 'Unknown error'})`);
-                }
-            } else {
-                // 其他错误
-                throw new Error(`Request setup failed: ${error.message}`);
-            }
+            console.error(`❌ Image generation failed:`, error.message);
+            throw new Error(`Image generation failed: ${error.message}`);
         }
     }
 
@@ -98,7 +73,7 @@ class TextToImageService {
         const {
             style = '',
             aspectRatio = '1:1',
-            quality = 'standard',
+            quality = 'low',  // Default to low for faster generation
             size = 'medium',
             enhancePrompt = true
         } = options;
@@ -115,72 +90,49 @@ class TextToImageService {
 
             console.log(`🎨 Generating image with prompt: "${fullPrompt.substring(0, 100)}..."`);
 
-            // 构建 API 请求体
-            const requestBody = {
-                contents: [
-                    {
-                        parts: [
-                            {
-                                text: fullPrompt
-                            }
-                        ]
-                    }
-                ]
+            // 构建 Puter.js txt2img API 选项
+            const puterOptions = {
+                quality: quality, // Puter supports 'high', 'medium', 'low' for gpt-image-1 model
+                model: options.model || 'gpt-image-1' // Default to gpt-image-1
             };
 
-            // 调用 Gemini API 生成图片
-            const apiResponse = await this.makeApiRequest(requestBody);
+            // 调用 Puter.js txt2img API 生成图片
+            const imageElement = await this.makeTxt2ImgRequest(fullPrompt, puterOptions);
 
-            // 验证响应格式
-            if (!apiResponse || !apiResponse.candidates || !apiResponse.candidates[0]) {
-                throw new Error('Invalid response from Gemini API');
+            // Convert image element to data URL if needed
+            let imageUrl;
+            if (imageElement instanceof HTMLImageElement) {
+                imageUrl = imageElement.src;
+            } else if (typeof imageElement === 'string') {
+                imageUrl = imageElement;
+            } else {
+                // If it's an image element, convert to data URL
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = imageElement.width;
+                canvas.height = imageElement.height;
+                ctx.drawImage(imageElement, 0, 0);
+                imageUrl = canvas.toDataURL();
             }
-
-            const candidate = apiResponse.candidates[0];
-            if (!candidate.content || !candidate.content.parts || !candidate.content.parts[0]) {
-                throw new Error('No content in API response');
-            }
-
-            // 寻找包含图片数据的part
-            let imagePart = null;
-            for (const part of candidate.content.parts) {
-                if (part.inlineData || part.inline_data) {
-                    imagePart = part;
-                    break;
-                }
-            }
-
-            if (!imagePart) {
-                throw new Error('No image data found in API response');
-            }
-
-            // 获取图片数据，支持两种格式
-            const imageData = imagePart.inlineData || imagePart.inline_data;
-            if (!imageData || !imageData.data) {
-                throw new Error('No image data in API response');
-            }
-
-            // 处理响应并提取图片信息
-            const parsedImageData = this.parseImageResponse(imageData);
 
             console.log(`✅ Image generated successfully`);
             
             return {
                 success: true,
                 data: {
-                    imageUrl: parsedImageData.url,
+                    imageUrl: imageUrl,
                     prompt: fullPrompt,
                     originalPrompt: prompt,
                     metadata: {
-                        model: this.model,
+                        model: puterOptions.model,
                         style,
                         aspectRatio,
                         quality,
                         size,
-                        mimeType: parsedImageData.mimeType,
+                        mimeType: 'image/png',
                         generatedAt: new Date().toISOString()
                     },
-                    rawResponse: imageData
+                    rawResponse: imageElement
                 }
             };
 
@@ -212,7 +164,7 @@ class TextToImageService {
             const qualityInstructions = {
                 'high': 'high quality, ultra detailed, masterpiece, 8k resolution',
                 'standard': 'good quality, detailed',
-                'draft': 'quick sketch, concept art'
+                'low': 'clear, well-composed, good representation'
             };
 
             const sizeInstructions = {
@@ -253,9 +205,27 @@ class TextToImageService {
      */
     parseImageResponse(imageData) {
         try {
-            // 获取base64图片数据和MIME类型
-            const imageBase64 = imageData.data;
-            const mimeType = imageData.mimeType || imageData.mime_type || 'image/png';
+            // For Puter.js, the image is typically returned as an image element or data URL
+            let imageBase64, mimeType;
+            
+            if (imageData instanceof HTMLImageElement) {
+                // If it's an image element, convert to data URL
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                ctx.drawImage(imageData, 0, 0);
+                const dataUrl = canvas.toDataURL();
+                imageBase64 = dataUrl.split(',')[1]; // Extract base64 part
+                mimeType = 'image/png';
+            } else if (typeof imageData === 'string' && imageData.startsWith('data:')) {
+                // If it's already a data URL
+                const parts = imageData.split(';base64,');
+                mimeType = parts[0].split(':')[1];
+                imageBase64 = parts[1];
+            } else {
+                throw new Error('Unexpected image data format');
+            }
             
             if (!imageBase64) {
                 throw new Error('No base64 image data found');
@@ -342,30 +312,18 @@ class TextToImageService {
             
             console.log(`🤖 Using model: ${model_info.platform_name}#${model_info.model_name}`);
 
-            // 创建LLM实例
+            // 创建LLM实例 - 现在会使用PuterLLM
             const llm = await createLLMInstance(model, () => {}, { model_info });
             
             // 设置模型参数
-            const llmOptions = { temperature };
-            
-            // 判断模型并设置最大token数
-            if (model_info.model_name === 'deepseek-v3-250324') {
-                llmOptions.max_tokens = Math.min(max_tokens, 16000);
-            } else if (model_info.model_name === 'deepseek-v3-1-250821') {
-                llmOptions.max_tokens = Math.min(max_tokens, 32000);
-            } else {
-                llmOptions.max_tokens = max_tokens;
-            }
-
+            const llmOptions = { temperature, max_tokens };
             const context = { messages };
 
-            // 对qwen3模型添加no_think前缀
+            // All model-specific logic is now handled in PuterLLM class
+            // Puter.js will handle model-specific configurations internally
             let finalPrompt = prompt;
-            if (model_info.model_name.indexOf('qwen3') > -1) {
-                finalPrompt = '/no_think' + prompt;
-            }
 
-            // 调用模型完成接口
+            // 调用模型完成接口 - 现在会通过PuterLLM调用Puter.js
             const content = await llm.completion(finalPrompt, context, llmOptions);
 
             if (!content || typeof content !== 'string') {
@@ -521,7 +479,7 @@ Please provide only the character description without any additional commentary 
             mood = 'professional',
             customStyle = '',
             aspectRatio = '3:4',  // 角色画像通常使用竖版比例
-            useLLMDescription = true  // 是否使用LLM生成角色描述
+            useLLMDescription = true // 是否使用LLM生成角色描述
         } = options;
 
         try {
@@ -564,7 +522,8 @@ Please provide only the character description without any additional commentary 
             const portraitOptions = {
                 ...options,
                 aspectRatio,
-                quality: 'high',
+                quality: 'medium', // Use medium quality for agent portraits
+                model: options.model || 'gpt-image-1', // Use Puter's image generation model
                 size: 'medium',
                 enhancePrompt: false  // 使用我们自定义的提示词
             };
@@ -896,19 +855,8 @@ Please provide only the character description without any additional commentary 
             await this.initialize();
             
             // 尝试一个简单的测试请求
-            const testRequestBody = {
-                contents: [
-                    {
-                        parts: [
-                            {
-                                text: 'Generate a simple test image of a red apple'
-                            }
-                        ]
-                    }
-                ]
-            };
-            
-            await this.makeApiRequest(testRequestBody);
+            const testPrompt = 'Generate a simple test image of a red apple';
+            await this.generateImage(testPrompt, { quality: 'low' });
             return true;
         } catch (error) {
             console.error('❌ Text to Image service health check failed:', error.message);

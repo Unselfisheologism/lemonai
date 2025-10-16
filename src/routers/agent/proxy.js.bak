@@ -1,0 +1,217 @@
+// @ts-ignore
+const router = require("koa-router")();
+const { PassThrough } = require("stream");
+
+const calcToken = require('@src/completion/calc.token.js');
+
+// Using Puter.js instead of traditional API keys
+const { puter } = require('@heyputer/puter.js');
+
+router.post("/v1/chat/completions", async (ctx, next) => {
+  const { request, response, state } = ctx;
+  const body = request.body || {};
+  const conversation_id = body.conversation_id;
+
+  // Using Puter.js - no API key needed as authentication is handled automatically
+  if (!puter || !puter.auth.isSignedIn()) {
+    ctx.status = 500;
+    ctx.body = {
+      error: {
+        message: "User is not signed in to Puter. Please authenticate with Puter first.",
+        type: "authentication_error",
+        code: "auth_required",
+      },
+    };
+    return;
+  }
+
+  // 根据客户端请求判断是否需要流式响应
+  const isStream = body.stream === true;
+
+  // Koa 的 response body 可以直接是 stream
+  const clientResponseStream = new PassThrough();
+  ctx.body = clientResponseStream;
+  ctx.status = 200;
+
+  try {
+    // 构建转发给 Puter.js 的请求体
+    const puterRequestBody = { ...body };
+    // 确保 stream 参数与我们期望的转发行为一致
+    const model = puterRequestBody.model || 'gpt-5-nano'; // Default to gpt-5-nano if no model specified
+    puterRequestBody.stream = isStream;
+
+    console.log("111111", JSON.stringify(puterRequestBody))
+
+    // 如果是流式请求，设置相应的响应头
+    if (isStream) {
+      response.type = "text/event-stream";
+      response.set("Cache-Control", "no-cache");
+      response.set("Connection", "keep-alive");
+      response.set("X-Accel-Buffering", "no"); // 禁用 Nginx 缓冲
+    } else {
+      // 非流式请求，保持默认的 application/json
+      response.type = "application/json";
+    }
+
+    // Use Puter.js to make the request
+    const messages = puterRequestBody.messages || [];
+    const prompt = messages.length > 0 ? messages[messages.length - 1].content : 'Hello';
+
+    if (isStream) {
+      // Stream response using Puter.js
+      const aiResponse = await puter.ai.chat(prompt, { model: model, stream: true });
+      
+      let fullContent = "";
+      let input_tokens = 0;
+      
+      // Calculate input tokens from messages
+      input_tokens = calcTokenInput('', messages);
+
+      // Process the AI response and send as SSE
+      (async () => {
+        try {
+          for await (const part of aiResponse) {
+            if (part?.text) {
+              fullContent += part.text;
+              
+              // Format as SSE data following OpenAI standard format
+              const sseData = {
+                id: `chatcmpl-${Date.now()}`,
+                object: "chat.completion.chunk",
+                created: Math.floor(Date.now() / 1000),
+                model: model,
+                choices: [{
+                  index: 0,
+                  delta: { content: part.text },
+                  finish_reason: null
+                }]
+              };
+              const data = `data: ${JSON.stringify(sseData)}\n\n`;
+              clientResponseStream.write(data);
+            }
+          }
+          
+          // Send final completion message
+          const finalSseData = {
+            id: `chatcmpl-${Date.now()}`,
+            object: "chat.completion.chunk",
+            created: Math.floor(Date.now() / 1000),
+            model: model,
+            choices: [{
+              index: 0,
+              delta: {},
+              finish_reason: "stop"
+            }]
+          };
+          clientResponseStream.write(`data: ${JSON.stringify(finalSseData)}\n\n`);
+          clientResponseStream.write("data: [DONE]\n\n");
+          
+          // Calculate output tokens
+          const output_tokens = calcToken(fullContent);
+          console.log("===input_tokens, output_tokens======", input_tokens, output_tokens);
+          
+          clientResponseStream.end();
+        } catch (error) {
+          console.error("Error streaming Puter.js response:", error);
+          const errorData = JSON.stringify({
+            error: {
+              message: error.message || "An error occurred during streaming from Puter.js.",
+              type: "puter_stream_error",
+              code: null,
+            },
+          });
+          clientResponseStream.write(`data: ${errorData}\n\n`);
+          clientResponseStream.end();
+          ctx.status = 500;
+        }
+      })();
+    } else {
+      // Non-streaming response using Puter.js
+      const aiResponse = await puter.ai.chat(prompt, { model: model });
+      const content = aiResponse.message?.content || aiResponse;
+      
+      // Calculate tokens
+      const input_tokens = calcTokenInput('', messages);
+      const output_tokens = calcToken(content);
+      console.log("===input_tokens, output_tokens======nostream:", input_tokens, output_tokens);
+
+      // Format response to match OpenAI format
+      ctx.body = {
+        id: `chatcmpl-${Date.now()}`,
+        object: "chat.completion",
+        created: Math.floor(Date.now() / 1000),
+        model: model,
+        choices: [{
+          index: 0,
+          message: { role: "assistant", content: content },
+          finish_reason: "stop"
+        }],
+        usage: {
+          prompt_tokens: input_tokens,
+          completion_tokens: output_tokens,
+          total_tokens: input_tokens + output_tokens
+        }
+      };
+      ctx.status = 200;
+    }
+
+  } catch (error) {
+    console.error("Error during Puter.js API proxy:", error);
+
+    // 处理错误
+    ctx.status = 500;
+    ctx.body = {
+      error: {
+        message: error.message || "An unknown error occurred during proxying to Puter.js.",
+        type: "proxy_server_error",
+        code: null,
+      },
+    };
+
+    // 如果流已经打开，确保它被关闭
+    if (isStream && !clientResponseStream.writableEnded) {
+      clientResponseStream.end();
+    }
+  }
+});
+
+const calcTokenInput = (prompt, messages) => {
+  let content = prompt;
+ for (const message of messages) {
+    // 添加 role 信息
+    content += `role: ${message.role}\n`;
+
+    // 处理 content
+    if (message.content) {
+      if (typeof message.content === 'string') {
+        content += message.content;
+      } else if (Array.isArray(message.content)) {
+        // 处理数组形式的 content
+        for (const item of message.content) {
+          if (item.type === 'text') {
+            content += item.text;
+          }
+        }
+      }
+    }
+
+    // 处理 tool_calls
+    if (message.tool_calls) {
+      for (const toolCall of message.tool_calls) {
+        content += `tool_call: ${toolCall.type}\n`;
+        if (toolCall.function) {
+          content += `function: ${toolCall.function.name}\n`;
+          if (toolCall.function.arguments) {
+            content += `arguments: ${toolCall.function.arguments}\n`;
+          }
+        }
+      }
+    }
+
+    // 添加消息分隔符
+    content += '\n---\n';
+  }
+  return calcToken(content);
+}
+
+module.exports = exports = router.routes();

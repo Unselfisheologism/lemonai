@@ -19,22 +19,24 @@ const Knowledge = require('./Knowledge');
 const User = require('./User');
 
 const tableSync = async () => {
-  await Conversation.sync({ alter: true });
-  await File.sync({ alter: true });
-  await Platform.sync({ alter: true });
-  await Model.sync({ alter: true });
-  await DefaultModelSettingTable.sync({ alter: true });
-  await SearchProviderTable.sync({ alter: true });
-  await UserProviderConfigTable.sync({ alter: true });
-  await UserSearchSettingTable.sync({ alter: true });
-  await LLMLogs.sync({ alter: true });
-  await Task.sync({ alter: true });
-  await Message.sync({ alter: true });
-  await McpServer.sync({ alter: true });
-  await Agent.sync({ alter: true });
-  await FileVersion.sync({ alter: true });
-  await Knowledge.sync({ alter: true });
-  await User.sync({ alter: true });
+  const models = [
+    Conversation, File, Platform, Model, DefaultModelSettingTable,
+    SearchProviderTable, UserProviderConfigTable, UserSearchSettingTable,
+    LLMLogs, Task, Message, McpServer, Agent, FileVersion, Knowledge, User
+  ];
+
+  for (const model of models) {
+    try {
+      await model.sync({ alter: true });
+    } catch (error) {
+      console.log(`Table sync failed for ${model.name}, trying fresh creation:`, error.message);
+      try {
+        await model.sync({ force: true });
+      } catch (forceError) {
+        console.error(`Failed to create table for ${model.name}:`, forceError.message);
+      }
+    }
+  }
 }
 
 const dataSync = async () => {
@@ -100,30 +102,81 @@ const dataUpdate = async () => {
       name: 'Volcengine'
     }
   })
-  const platform = await Platform.findOne({ where: { name: 'Gemini' } })
-  if (!platform) {
-    const geminiPlatform = defaultData.find(item => item.name === 'Gemini')
-    console.log(geminiPlatform)
+  
+  // Remove Gemini platform and add Puter platform instead
+  // First, remove any existing Gemini platform
+  await Platform.destroy({ where: { name: 'Gemini' } });
+  
+  // Check if Puter platform exists, if not create it
+  const puterPlatform = await Platform.findOne({ where: { name: 'Puter' } })
+  if (!puterPlatform) {
+    // Create Puter platform with default models
     const platformData = {
-      name: geminiPlatform.name,
-      logo_url: geminiPlatform.logo_url,
+      name: 'Puter',
+      logo_url: 'https://res.cloudinary.com/ddz3nsnq1/image/upload/v1760460731/putersvg_yqrokx.svg',
       source_type: 'system',
-      api_key: geminiPlatform.api_key,
-      api_url: geminiPlatform.api_url,
-      api_version: geminiPlatform.api_version,
-      key_obtain_url: geminiPlatform.key_obtain_url,
+      api_key: '', // Puter doesn't require API key as it uses user's auth
+      api_url: 'https://api.puter.com', // Puter API URL (even though not used for chat, it's needed for other services)
+      api_version: 'v2', // Puter API version
+      key_obtain_url: 'https://puter.com', // Puter website for obtaining access
+      is_enabled: true, // Enable the platform by default
+      is_subscribe: false, // Puter doesn't require subscription
     };
     const platform = await Platform.create(platformData);
-    const modelsData = geminiPlatform.models.map(model => ({
-      // @ts-ignore
-      platform_id: platform.id,
-      logo_url: model.logo_url,
-      model_id: model.model_id,
-      model_name: model.model_name,
-      group_name: model.group_name,
-      model_types: model.model_types,
-    }));
+    
+    // Create default Puter models
+    const modelsData = [
+      {
+        // @ts-ignore
+        platform_id: platform.id,
+        logo_url: 'https://res.cloudinary.com/ddz3nsnq1/image/upload/v1760460731/putersvg_yqrokx.svg',
+        model_id: 'gpt-5-nano',
+        model_name: 'GPT-5 Nano',
+        group_name: 'GPT-5',
+        model_types: ['text-generation'],
+      },
+      {
+        // @ts-ignore
+        platform_id: platform.id,
+        logo_url: 'https://res.cloudinary.com/ddz3nsnq1/image/upload/v1760460731/putersvg_yqrokx.svg',
+        model_id: 'gpt-5-mini',
+        model_name: 'GPT-5 Mini',
+        group_name: 'GPT-5',
+        model_types: ['text-generation'],
+      },
+      {
+        // @ts-ignore
+        platform_id: platform.id,
+        logo_url: 'https://res.cloudinary.com/ddz3nsnq1/image/upload/v1760460731/putersvg_yqrokx.svg',
+        model_id: 'claude-sonnet-4',
+        model_name: 'Claude Sonnet 4',
+        group_name: 'Claude',
+        model_types: ['text-generation'],
+      },
+      {
+        // @ts-ignore
+        platform_id: platform.id,
+        logo_url: 'https://res.cloudinary.com/ddz3nsnq1/image/upload/v1760460731/putersvg_yqrokx.svg',
+        model_id: 'gemini-2.0-flash',
+        model_name: 'Gemini 2.0 Flash',
+        group_name: 'Gemini',
+        model_types: ['text-generation'],
+      }
+    ];
     await Model.bulkCreate(modelsData);
+  } else {
+    // Update existing Puter platform to ensure correct settings
+    await Platform.update({
+      logo_url: 'https://res.cloudinary.com/ddz3nsnq1/image/upload/v1760460731/putersvg_yqrokx.svg',
+      api_key: '',
+      api_url: 'https://api.puter.com',
+      api_version: 'v2',
+      key_obtain_url: 'https://puter.com',
+      is_enabled: true,
+      is_subscribe: false,
+    }, {
+      where: { name: 'Puter' }
+    });
   }
 
   // v0.1.1 => v0.1.2

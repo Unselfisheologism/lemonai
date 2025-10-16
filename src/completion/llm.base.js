@@ -3,7 +3,7 @@ const TYPE_ENUM = {
   STREAM: 'STREAM'
 }
 
-const axios = require('axios');
+const axios = require('axios').default;
 
 class LLM {
 
@@ -14,6 +14,7 @@ class LLM {
     this.splitter = '\n\n'
     if (model) { this.model = model }
     this.options = options;
+    this.CHAT_COMPLETION_URL = ''; // Initialize the URL property
   }
 
   /**
@@ -57,19 +58,8 @@ class LLM {
   }
 
   resolveConfigHeaders = (config) => {
-    if (this.API_KEY) {
-      Object.assign(config.headers, {
-        "Authorization": `Bearer ${this.API_KEY}`,
-      });
-      if (config.url && config.url.indexOf('azure') !== -1) {
-        Object.assign(config.headers, {
-          "api-key": this.API_KEY
-        });
-      }
-      if (config.url && config.url.indexOf('baidu') !== -1) {
-        Object.assign(config.headers, { "appid": this.appid });
-      }
-    }
+    // For Puter.js, we don't need to set API_KEY in headers as authentication is handled automatically
+    // If extending to other providers, you can add conditional logic here
   }
 
   async request(messages = [], options = {}) {
@@ -125,7 +115,7 @@ class LLM {
     // console.log('config', config);
     this.resolveConfigHeaders(config);
     // console.log('config', JSON.stringify(config, null, 2));
-    const response = await axios.request(config).catch(err => {
+    const response = await axios.post(config.url, config.data, { headers: config.headers, responseType: "stream" }).catch(err => {
       return err;
     });
     // console.log('response', response);
@@ -212,27 +202,27 @@ class LLM {
    * 1. 截取 data: 后并 JSON.parse
    * 2. 读取 json.choices[0].delta.content
    * 
-   * 适用服务 openai | minimax | kimi | deepseek | zhipu(智谱) | qwen 开源
+   * 适用服务 Puter.js (兼容 openai | minimax | kimi | deepseek | zhipu(智谱) | qwen 开源格式)
    * @param {*} message 
-   * @returns { type: 'text', text: '' }
+   * @returns {{ type: string, text: string }}
    */
   messageToValue(message) {
     // console.log('message', message);
     if (message == "data: [DONE]" || message.startsWith("data: [DONE]")) {
-      return { type: "done" };
+      return { type: "done", text: "" };
     }
     let data = message.split("data:")[1];
     let value = {}
     try {
       value = JSON.parse(data)
     } catch (error) {
-      return { type: "done" };
+      return { type: "done", text: "" };
     }
 
     // token 消耗消息
     if (value.usage) {
       // console.log('\nToken.Usage', value.usage);
-      // return { type: "done" };
+      // return { type: "done", text: "" };
     }
 
     const choices = value.choices || [];
@@ -253,7 +243,7 @@ class LLM {
     if (choice.delta && choice.delta.content) {
       return { type: "text", text: choice.delta.content };
     }
-    return {};
+    return { type: "text", text: "" };
   }
 }
 

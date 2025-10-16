@@ -502,7 +502,7 @@ function getMessagesContextByTime(messages) {
   // 再反转回来，保持从旧到新的时间顺序
   const finalContext = limited.reverse();
 
-  // 转换为 openai 标准格式
+  // 转换为 Puter.js 标准格式
   return finalContext.map(msg => ({
     role: msg.role,
     content: msg.content

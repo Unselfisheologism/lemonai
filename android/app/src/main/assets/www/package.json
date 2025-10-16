@@ -1,0 +1,14 @@
+{
+  "name": "lemonai-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for LemonAI Mobile",
+  "main": "mcp-server.js",
+  "scripts": {
+    "start": "node mcp-server.js"
+  },
+  "dependencies": {
+  },
+  "keywords": ["mcp", "lemonai", "mobile"],
+  "author": "LemonAI",
+  "license": "MIT"
+}

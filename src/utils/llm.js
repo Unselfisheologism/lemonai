@@ -27,20 +27,13 @@ const call = async (prompt, conversation_id, model_type = DEFAULT_MODEL_TYPE, op
   const model_info = await getDefaultModel(conversation_id)
   const model = `provider#${model_info.platform_name}#${model_info.model_name}`;
   const llm = await createLLMInstance(model, onTokenStream, { model_info });
-  // 判断模型
-  if (model_info.model_name === 'deepseek-v3-250324') {
-    options.max_tokens = 16000;
-  } else if (model_info.model_name === 'deepseek-v3-1-250821') {
-    options.max_tokens = 32000;
-  }
   
   const { response_format, messages = [], ...restOptions } = options;
   const context = { messages };
 
-  // call qwen3 model with no_think
-  if (prompt && model_info.model_name.indexOf('qwen3') > -1) {
-    prompt = '/no_think' + prompt;
-  }
+  // All model-specific logic is now handled in PuterLLM class
+  // Puter.js will handle model-specific configurations internally
+  // Model mapping and special handling is done in the PuterLLM.mapModelToPuter() method
 
   const content = await llm.completion(prompt, context, restOptions);
 

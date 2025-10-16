@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LemonAI Workflow Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #007AFF;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #0062CC;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LemonAI Workflow Test</h1>
+        
+        <div class="test-section">
+            <h2>Gmail Workflow Test</h2>
+            <button id="testGmail">Test Gmail Workflow</button>
+            <div id="gmailResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Notion Workflow Test</h2>
+            <button id="testNotion">Test Notion Workflow</button>
+            <div id="notionResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Combined Workflow Test</h2>
+            <button id="testCombined">Test Combined Workflow</button>
+            <div id="combinedResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test data for Gmail
+        const gmailWorkflow = [
+            {
+                type: "APP_SWITCH",
+                params: {
+                    appName: "com.google.android.gm"
+                }
+            },
+            {
+                type: "MCP_EXECUTE",
+                params: {
+                    pieceName: "gmail",
+                    action: "sendEmail",
+                    params: JSON.stringify({
+                        to: "test@example.com",
+                        subject: "Test Email from LemonAI",
+                        body: "This is a test email sent from the LemonAI mobile app."
+                    })
+                }
+            }
+        ];
+        
+        // Test data for Notion
+        const notionWorkflow = [
+            {
+                type: "APP_SWITCH",
+                params: {
+                    appName: "notion.id"
+                }
+            },
+            {
+                type: "MCP_EXECUTE",
+                params: {
+                    pieceName: "notion",
+                    action: "createPage",
+                    params: JSON.stringify({
+                        pageTitle: "Test Page from LemonAI",
+                        pageContent: "This is a test page created by the LemonAI mobile app."
+                    })
+                }
+            }
+        ];
+        
+        // Combined workflow
+        const combinedWorkflow = [...gmailWorkflow, ...notionWorkflow];
+        
+        // Function to display result
+        function displayResult(elementId, result, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(result, null, 2);
+            element.className = "result " + (isSuccess ? "success" : "error");
+            element.style.display = "block";
+        }
+        
+        // Function to execute workflow through native bridge
+        function executeWorkflow(workflow) {
+            return new Promise((resolve, reject) => {
+                try {
+                    // In a real implementation, this would call the native bridge
+                    // For testing purposes, we'll simulate the calls
+                    console.log("Executing workflow through native bridge:", workflow);
+                    
+                    // Simulate native bridge calls
+                    let results = [];
+                    for (const step of workflow) {
+                        switch (step.type) {
+                            case "APP_SWITCH":
+                                console.log("Switching to app:", step.params.appName);
+                                results.push({ 
+                                    type: "APP_SWITCH", 
+                                    appName: step.params.appName, 
+                                    success: true, 
+                                    message: "Successfully switched to app" 
+                                });
+                                break;
+                                
+                            case "MCP_EXECUTE":
+                                console.log("Executing MCP piece:", step.params.pieceName, step.params.action);
+                                
+                                // Simulate MCP execution
+                                let mcpResult;
+                                if (step.params.pieceName === "gmail" && step.params.action === "sendEmail") {
+                                    mcpResult = {
+                                        success: true,
+                                        messageId: "test-message-id",
+                                        message: "Email sent successfully"
+                                    };
+                                } else if (step.params.pieceName === "notion" && step.params.action === "createPage") {
+                                    mcpResult = {
+                                        success: true,
+                                        pageId: "new-page-id",
+                                        url: "https://notion.so/new-page-id",
+                                        message: "Page created successfully"
+                                    };
+                                } else {
+                                    mcpResult = {
+                                        success: false,
+                                        error: "Unknown MCP piece or action"
+                                    };
+                                }
+                                
+                                results.push({ 
+                                    type: "MCP_EXECUTE", 
+                                    pieceName: step.params.pieceName, 
+                                    action: step.params.action,
+                                    success: mcpResult.success,
+                                    result: mcpResult
+                                });
+                                break;
+                                
+                            default:
+                                console.log("Unknown step type:", step.type);
+                                results.push({ 
+                                    type: step.type, 
+                                    success: false, 
+                                    error: "Unknown step type" 
+                                });
+                        }
+                    }
+                    
+                    resolve({ success: true, results: results });
+                } catch (error) {
+                    console.error("Error executing workflow:", error);
+                    reject({ success: false, error: error.message });
+                }
+            });
+        }
+        
+        // Test Gmail workflow
+        document.getElementById('testGmail').addEventListener('click', async function() {
+            const button = this;
+            button.disabled = true;
+            button.textContent = "Testing...";
+            
+            try {
+                const result = await executeWorkflow(gmailWorkflow);
+                displayResult('gmailResult', result, result.success);
+            } catch (error) {
+                displayResult('gmailResult', error, false);
+            } finally {
+                button.disabled = false;
+                button.textContent = "Test Gmail Workflow";
+            }
+        });
+        
+        // Test Notion workflow
+        document.getElementById('testNotion').addEventListener('click', async function() {
+            const button = this;
+            button.disabled = true;
+            button.textContent = "Testing...";
+            
+            try {
+                const result = await executeWorkflow(notionWorkflow);
+                displayResult('notionResult', result, result.success);
+            } catch (error) {
+                displayResult('notionResult', error, false);
+            } finally {
+                button.disabled = false;
+                button.textContent = "Test Notion Workflow";
+            }
+        });
+        
+        // Test combined workflow
+        document.getElementById('testCombined').addEventListener('click', async function() {
+            const button = this;
+            button.disabled = true;
+            button.textContent = "Testing...";
+            
+            try {
+                const result = await executeWorkflow(combinedWorkflow);
+                displayResult('combinedResult', result, result.success);
+            } catch (error) {
+                displayResult('combinedResult', error, false);
+            } finally {
+                button.disabled = false;
+                button.textContent = "Test Combined Workflow";
+            }
+        });
+        
+        // Check if native bridge is available
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof NativeBridge !== 'undefined') {
+                console.log("NativeBridge is available");
+                document.body.classList.add('native-bridge-available');
+            } else {
+                console.log("NativeBridge is not available");
+                // Add a message to inform the user
+                const message = document.createElement('div');
+                message.className = 'result info';
+                message.textContent = 'NativeBridge is not available. This test is running in simulation mode.';
+                message.style.marginTop = '20px';
+                document.querySelector('.container').appendChild(message);
+            }
+        });
+    </script>
+</body>
+</html>

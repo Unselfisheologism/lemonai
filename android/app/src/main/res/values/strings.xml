@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">LemonAI</string>
+    <string name="accessibility_service_description">LemonAI Accessibility Service for workflow automation</string>
+</resources>

@@ -1,17 +1,14 @@
-const Azure = require('./llm.azure');
-const OpenAI = require('./llm.openai');
-const GLM3 = require('./llm.glm3');
-const QWen = require('./llm.qwen');
-const Qwen72bChat = require('./llm.qwen-72b-chat');
-const Ollama = require('./llm.ollama');
+const PuterLLM = require('./llm.puter');
 
 const map = {
-  'azure': Azure,
-  'openai': OpenAI,
-  'glm3': GLM3,
-  'qwen': Qwen72bChat,
-  'qwen.ali': QWen,
-  'ollama': Ollama,
+  'puter': PuterLLM,
+  // Keep other providers as fallbacks for now, but in production you might want to remove them
+  'azure': () => { throw new Error("Azure provider has been replaced with Puter.js"); },
+  'openai': () => { throw new Error("OpenAI provider has been replaced with Puter.js"); },
+  'glm3': () => { throw new Error("GLM3 provider has been replaced with Puter.js"); },
+  'qwen': () => { throw new Error("Qwen provider has been replaced with Puter.js"); },
+  'qwen.ali': () => { throw new Error("Qwen Ali provider has been replaced with Puter.js"); },
+  'ollama': () => { throw new Error("Ollama provider has been replaced with Puter.js"); },
 }
 
 const createLLMInstance = (type, onTokenStream) => {
