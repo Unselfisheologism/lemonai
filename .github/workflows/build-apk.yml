@@ -83,5 +83,4 @@ jobs:
       with:
         name: build-logs
         path: |
-          android/app/build/reports/
-          android/app/build/outputs/logs/
+          android/app/build/reports/android/app/build/outputs/logs/
