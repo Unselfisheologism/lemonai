@@ -1,0 +1,69 @@
+name: Diagnose Android Build
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check Project Structure
+      run: |
+        echo "=== Current Directory ==="
+        pwd
+        echo ""
+        
+        echo "=== Root Directory Contents ==="
+        ls -la
+        echo ""
+        
+        echo "=== Android Directory Check ==="
+        if [ -d "android" ]; then
+          echo "Android directory exists"
+          ls -la android/
+        else
+          echo "ERROR: Android directory NOT FOUND"
+          echo "Creating basic Android structure..."
+          mkdir -p android
+        fi
+        echo ""
+        
+        echo "=== Checking for Essential Files ==="
+        echo "gradlew exists: $(test -f android/gradlew && echo 'YES' || echo 'NO')"
+        echo "build.gradle exists: $(test -f android/build.gradle && echo 'YES' || echo 'NO')"
+        echo "settings.gradle exists: $(test -f android/settings.gradle && echo 'YES' || echo 'NO')"
+        echo "gradle directory exists: $(test -d android/gradle && echo 'YES' || echo 'NO')"
+        echo ""
+        
+        if [ -d "android" ]; then
+          echo "=== Android Directory Contents ==="
+          ls -la android/
+          echo ""
+          
+          if [ -f "android/build.gradle" ]; then
+            echo "=== build.gradle Contents ==="
+            cat android/build.gradle
+          fi
+          
+          if [ -f "android/settings.gradle" ]; then
+            echo "=== settings.gradle Contents ==="
+            cat android/settings.gradle
+          fi
+        fi
+    
+    - name: Set up JDK 11
+      if: success()
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+    
+    - name: Create Missing Gradle Files (If Needed)
+      run: |
+        cd android
+        
+        # Check if gradlew exists, if not create it
+        if [ ! -f "gradlew" ]; then
+          echo "Creating gradlew script..."
+          cat > gradlew << 'EOF'
