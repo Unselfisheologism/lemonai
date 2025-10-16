@@ -18,6 +18,9 @@ jobs:
       uses: gradle/gradle-build-action@v2
       with:
         gradle-version: wrapper
+    - name: Make Gradle Executable
+      run: chmod +x ./gradlew
+      working-directory: android
     - name: Build Release APK
       run: ./gradlew assembleRelease
       working-directory: android
