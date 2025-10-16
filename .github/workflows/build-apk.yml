@@ -14,16 +14,11 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
-    - name: Setup Gradle
+    - name: Setup Gradle and Build
       uses: gradle/gradle-build-action@v2
       with:
-        gradle-version: 9.1.0
-    - name: Make Gradle Executable
-      run: chmod +x gradlew
-      working-directory: android
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
-      working-directory: android
+        gradle-version: wrapper
+        arguments: -p android assembleRelease
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v4
       with:
