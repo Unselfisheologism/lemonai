@@ -2,7 +2,6 @@ name: Build Mobile APK
 on:
   push:
     branches: [ mobile-implementation, main ]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -83,4 +82,4 @@ jobs:
       with:
         name: build-logs
         path: |
-          android/app/build/reports/android/app/build/outputs/logs/
+          android/app/build/reports/
