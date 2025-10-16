@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       # Get the app source
       - name: Get the source
@@ -18,7 +18,7 @@ jobs:
       - name: Setup JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '1'
+          java-version: '11'
           distribution: 'temurin'
 
       # Make gradlew executable
