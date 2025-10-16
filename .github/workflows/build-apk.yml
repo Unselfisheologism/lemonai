@@ -14,15 +14,12 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
-    - name: Make Gradle Executable
-      run: chmod +x gradlew
-      working-directory: android
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
       with:
-        gradle-version: wrapper
-    - name: Initialize Gradle Wrapper
-      run: ./gradlew --version
+        gradle-version: 8.0
+    - name: Make Gradle Executable
+      run: chmod +x gradlew
       working-directory: android
     - name: Build Release APK
       run: ./gradlew assembleRelease
