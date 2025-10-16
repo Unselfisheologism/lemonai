@@ -1,9 +1,9 @@
 name: Build Android APK
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, mobile-implementation ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, mobile-implementation ]
   workflow_dispatch:
 
 jobs:
@@ -19,12 +19,38 @@ jobs:
         distribution: 'temurin'
     
     - name: Make gradlew executable
-      run: chmod +x android/gradlew
+      run: |
+        if [ -f "android/gradlew" ]; then
+          chmod +x android/gradlew
+        else
+          echo "gradlew not found in android directory"
+          ls -la android/
+          exit 1
+        fi
+    
+    - name: Check if Android directory exists
+      run: |
+        if [ ! -d "android" ]; then
+          echo "Android directory not found"
+          ls -la
+          exit 1
+        fi
+        
+        if [ ! -f "android/build.gradle" ]; then
+          echo "Android build.gradle not found"
+          ls -la android/
+          exit 1
+        fi
     
     - name: Build Debug APK
       run: |
         cd android
-        ./gradlew assembleDebug --stacktrace
+        ./gradlew assembleDebug --stacktrace || {
+          echo "Gradle build failed"
+          echo "Listing available gradle tasks:"
+          ./gradlew tasks || echo "Cannot list tasks"
+          exit 1
+        }
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
