@@ -80,8 +80,14 @@ class NativeBridge(private val context: Context) {
         return try {
             val result = NodeServiceHelper.executeMcpPiece(pieceName, action, params)
             val response = JSONObject()
-            response.put("success", true)
-            response.put("result", result)
+            // Check if node.js integration is available
+            if (result == "Node.js integration not available") {
+                response.put("success", false)
+                response.put("result", result)
+            } else {
+                response.put("success", true)
+                response.put("result", result)
+            }
             response.toString()
         } catch (e: Exception) {
             val response = JSONObject()
