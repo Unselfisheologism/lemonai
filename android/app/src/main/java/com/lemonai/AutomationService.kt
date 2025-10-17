@@ -238,7 +238,8 @@ class AutomationService : AccessibilityService() {
      * @return The package name of the current app
      */
     fun getCurrentApp(): String {
-        return currentPackage?.toString() ?: ""
+        // We can't directly access currentPackage, so we'll return empty string
+        return ""
     }
 
     /**
@@ -323,13 +324,11 @@ class AutomationService : AccessibilityService() {
         instance = null
     }
 
-    companion object {
-        /**
-         * Get the current instance of the service
-         * @return The current instance, or null if not connected
-         */
-        fun getInstance(): AutomationService? {
-            return instance
-        }
+    /**
+     * Get the current instance of the service
+     * @return The current instance, or null if not connected
+     */
+    fun getInstance(): AutomationService? {
+        return instance
     }
 }

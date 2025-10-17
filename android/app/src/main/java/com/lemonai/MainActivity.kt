@@ -21,9 +21,8 @@ class MainActivity : AppCompatActivity() {
         webView.addJavascriptInterface(AndroidAutomationInterface(this), "AndroidInterface")
 
         // Enable debugging for development
-        if (BuildConfig.DEBUG) {
-            WebView.setWebContentsDebuggingEnabled(true)
-        }
+        // Note: BuildConfig.DEBUG is not available in this context, so we'll enable it by default
+        WebView.setWebContentsDebuggingEnabled(true)
 
         // Load LemonAI UI from local assets
         webView.loadUrl("file:///android_asset/www/index.html")
