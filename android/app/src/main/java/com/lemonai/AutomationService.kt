@@ -5,6 +5,8 @@ import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.GestureDescription
+import android.graphics.Path
 import android.graphics.Rect
 import org.json.JSONObject
 import java.util.concurrent.ConcurrentHashMap
@@ -278,12 +280,12 @@ class AutomationService : AccessibilityService() {
         try {
             // Use the built-in gesture API if available (API 24+)
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                val path = android.graphics.Path()
+                val path = Path()
                 path.moveTo(startX.toFloat(), startY.toFloat())
                 path.lineTo(endX.toFloat(), endY.toFloat())
                 
-                val gestureStart = android.view.accessibility.GestureDescription.Builder()
-                    .addStroke(android.view.accessibility.GestureDescription.StrokeDescription(path, 0, duration.toLong()))
+                val gestureStart = GestureDescription.Builder()
+                    .addStroke(GestureDescription.StrokeDescription(path, 0, duration.toLong()))
                     .build()
                 
                 return dispatchGesture(gestureStart, null, null)
