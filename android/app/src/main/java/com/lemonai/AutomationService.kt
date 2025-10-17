@@ -5,7 +5,7 @@ import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import android.view.accessibility.GestureDescription
+import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.graphics.Rect
 import org.json.JSONObject
