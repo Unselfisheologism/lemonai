@@ -637,7 +637,7 @@ export default {
       apiKeyPlaceholder: "Enter your API key",
       apiKey: "API key",
       apiAddress: "API address",
-      tavilyName: "Tavily (key)",
+      perplexityName: "Perplexity (key)",
       baiduName: "Baidu (free)",
       bingName: "Bing (free)",
       couldswayName: "Cloudsway (key)",

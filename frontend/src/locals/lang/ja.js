@@ -391,7 +391,7 @@ export default {
       apiKeyPlaceholder: "APIキーを入力してください",
       apiKey: "APIキー",
       apiAddress: "APIアドレス",
-      tavilyName: "Tavily（キー）",
+      perplexityName: "Perplexity（キー）",
       baiduName: "百度（無料）",
       bingName: "Bing（無料）",
       saveBlacklistSuccess: "ブラックリストを保存しました",

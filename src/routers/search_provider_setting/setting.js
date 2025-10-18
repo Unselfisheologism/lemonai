@@ -3,7 +3,6 @@ const router = require("koa-router")();
 const UserProviderConfig = require("@src/models/UserProviderConfig");
 const UserSearchSetting = require("@src/models/UserSearchSetting");
 const SearchProviderTable = require("@src/models/SearchProvider");
-const TalivySearch = require("@src/tools/impl/web_search/TalivySearch");
 const LocalSearch = require("@src/tools/impl/web_search/LocalSearch");
 const CloudswaySearch = require("@src/tools/impl/web_search/CloudswaySearch");
 // upsert user provider config
@@ -307,11 +306,7 @@ router.get("/templates", async (ctx) => {
  */
 router.post("/check_search_provider", async ({ request, response }) => {
     const { type, api_key = "", endpoint = "", engine = "" } = request.body;
-    if (type === 'tavily') {
-        const talivy = new TalivySearch({ key: api_key });
-        const res = await talivy.check()
-        response.success(res)
-    } else if (type === 'local') {
+    if (type === 'local') {
         const local = new LocalSearch();
         const res = await local.check(engine)
         response.success(res)

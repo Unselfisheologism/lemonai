@@ -11,12 +11,22 @@ class AndroidWorkflowEngine(private val context: Context) {
     
     fun switchApp(appName: String): Boolean {
         return try {
-            // Switch app via direct intent
-            val success = switchAppViaIntent(appName)
-            if (success) {
-                currentApp = appName
+            // Use the accessibility service to switch app if available
+            val service = AutomationService.getInstance()
+            if (service != null) {
+                val success = service.switchToApp(appName)
+                if (success) {
+                    currentApp = appName
+                }
+                success
+            } else {
+                // Fallback to direct intent if service not available
+                val success = switchAppViaIntent(appName)
+                if (success) {
+                    currentApp = appName
+                }
+                success
             }
-            success
         } catch (e: Exception) {
             Log.e("AndroidWorkflowEngine", "Error switching app: ${e.message}")
             false
@@ -38,17 +48,43 @@ class AndroidWorkflowEngine(private val context: Context) {
     }
 
     fun fillForm(fields: Map<String, String>): Boolean {
-        // In a real implementation, this would use accessibility service to fill form fields
-        // For now, we'll just log the fields
-        Log.d("AndroidWorkflowEngine", "Filling form with fields: $fields")
-        return true
+        // Use the accessibility service to fill form fields
+        return try {
+            val service = AutomationService.getInstance()
+            if (service != null) {
+                // Iterate through fields and fill each one
+                for ((selector, value) in fields) {
+                    val success = service.fillFormField(selector, value)
+                    if (!success) {
+                        Log.e("AndroidWorkflowEngine", "Failed to fill form field: $selector")
+                        return false
+                    }
+                }
+                true
+            } else {
+                Log.e("AndroidWorkflowEngine", "AutomationService not available")
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("AndroidWorkflowEngine", "Error filling form: ${e.message}")
+            false
+        }
     }
 
     fun clickElement(selector: String): Boolean {
-        // In a real implementation, this would use accessibility service to click element
-        // For now, we'll just log the selector
-        Log.d("AndroidWorkflowEngine", "Clicking element with selector: $selector")
-        return true
+        // Use the accessibility service to click element
+        return try {
+            val service = AutomationService.getInstance()
+            if (service != null) {
+                return service.clickElement(selector)
+            } else {
+                Log.e("AndroidWorkflowEngine", "AutomationService not available")
+                return false
+            }
+        } catch (e: Exception) {
+            Log.e("AndroidWorkflowEngine", "Error clicking element with selector $selector", e)
+            false
+        }
     }
 
     fun executeWorkflow(steps: List<WorkflowStep>): JSONObject {

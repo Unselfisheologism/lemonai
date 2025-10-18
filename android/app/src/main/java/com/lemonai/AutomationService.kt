@@ -21,6 +21,15 @@ class AutomationService : AccessibilityService() {
     companion object {
         private const val TAG = "AutomationService"
         private var instance: AutomationService? = null
+        
+        /**
+         * Get the current instance of the service
+         * @return The current instance, or null if not connected
+         */
+        @JvmStatic
+        fun getInstance(): AutomationService? {
+            return instance
+        }
     }
 
     private val webViewCallbacks = ConcurrentHashMap<String, (String) -> Unit>()

@@ -391,7 +391,7 @@ export default {
       apiKeyPlaceholder: "Geben Sie Ihren API-Schlüssel ein",
       apiKey: "API-Schlüssel",
       apiAddress: "API-Adresse",
-      tavilyName: "Tavily (Schlüssel)",
+      perplexityName: "Perplexity (Schlüssel)",
       baiduName: "Baidu (kostenlos)",
       bingName: "Bing (kostenlos)",
       saveBlacklistSuccess: "Blacklist erfolgreich gespeichert",

@@ -391,7 +391,7 @@ export default {
       apiKeyPlaceholder: "輸入您的 API 密鑰",
       apiKey: "API 密鑰",
       apiAddress: "API 地址",
-      tavilyName: "Tavily（密鑰）",
+      perplexityName: "Perplexity（密鑰）",
       baiduName: "百度（免費）",
       bingName: "必應（免費）",
       saveBlacklistSuccess: "黑名單儲存成功",

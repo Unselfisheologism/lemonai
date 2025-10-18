@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary colors -->
+    <color name="colorPrimary">#4A90E2</color>
+    <color name="colorPrimaryDark">#357ABD</color>
+    <color name="colorAccent">#FF6B35</color>
+    
+    <!-- Background colors -->
+    <color name="windowBackground">#F5F5F5</color>
+    <color name="cardBackground">#FFFFFF</color>
+    <color name="popupBackground">#FFFFFF</color>
+    
+    <!-- Text colors -->
+    <color name="textColorPrimary">#212121</color>
+    <color name="textColorSecondary">#757575</color>
+    <color name="textColorHint">#9E9E9E</color>
+    <color name="textColorInverse">#FFFFFF</color>
+    
+    <!-- Divider colors -->
+    <color name="dividerColor">#E0E0E0</color>
+    
+    <!-- Button colors -->
+    <color name="buttonBackground">#4A90E2</color>
+    <color name="buttonBackgroundPressed">#357ABD</color>
+    <color name="buttonText">#FFFFFF</color>
+    
+    <!-- Input field colors -->
+    <color name="inputBackground">#FFFFFF</color>
+    <color name="inputBorder">#E0E0E0</color>
+    <color name="inputBorderFocused">#4A90E2</color>
+    
+    <!-- Status colors -->
+    <color name="statusActive">#4CAF50</color>
+    <color name="statusDormant">#FFC107</color>
+    <color name="statusInactive">#9E9E9E</color>
+    
+    <!-- Error colors -->
+    <color name="errorColor">#F44336</color>
+    <color name="warningColor">#FF9800</color>
+    <color name="successColor">#4CAF50</color>
+    
+    <!-- Tab colors -->
+    <color name="tabBackground">#FFFFFF</color>
+    <color name="tabSelected">#4A90E2</color>
+    <color name="tabUnselected">#757575</color>
+    
+    <!-- Chat colors -->
+    <color name="chatUserBackground">#E3F2FD</color>
+    <color name="chatAIBackground">#F1F8E9</color>
+    
+    <!-- Workflow colors -->
+    <color name="workflowNodeBackground">#FFFFFF</color>
+    <color name="workflowNodeBorder">#E0E0E0</color>
+    <color name="workflowConnector">#9E9E9E</color>
+    
+    <!-- Canvas colors -->
+    <color name="canvasBackground">#EEEEEE</color>
+    <color name="canvasItemBackground">#FFFFFF</color>
+    
+    <!-- Video player colors -->
+    <color name="videoPlayerBackground">#000000</color>
+    <color name="videoPlayerControl">#80000000</color>
+    
+    <!-- Accessibility colors -->
+    <color name="accessibilityHighlight">#FFEB3B</color>
+    
+    <!-- Switch colors -->
+    <color name="switchThumbColor">#4A90E2</color>
+    <color name="switchTrackColor">#BDBDBD</color>
+    
+    <!-- Snackbar colors -->
+    <color name="snackbarBackground">#323232</color>
+    
+    <!-- Icon colors -->
+    <color name="iconColor">#757575</color>
+    <color name="iconColorActive">#4A90E2</color>
+    
+    <!-- Gradient colors -->
+    <color name="gradientStart">#4A90E2</color>
+    <color name="gradientEnd">#5D6FD3</color>
+    
+    <!-- Transparent colors -->
+    <color name="transparent">#00000000</color>
+    <color name="semiTransparent">#80000000</color>
+    
+    <!-- AI agent colors -->
+    <color name="aiAgentPrimary">#9C27B0</color>
+    <color name="aiAgentSecondary">#E1BEE7</color>
+    
+    <!-- Expert agent colors -->
+    <color name="expertAgentPrimary">#009688</color>
+    <color name="expertAgentSecondary">#B2DFDB</color>
+    
+    <!-- Automation colors -->
+    <color name="automationPrimary">#FF9800</color>
+    <color name="automationSecondary">#FFE0B2</color>
+    
+    <!-- Search colors -->
+    <color name="searchPrimary">#2196F3</color>
+    <color name="searchSecondary">#BBDEFB</color>
+</resources>

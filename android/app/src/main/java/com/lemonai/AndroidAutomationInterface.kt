@@ -71,12 +71,15 @@ class AndroidAutomationInterface(private val context: Context) {
      */
     @android.webkit.JavascriptInterface
     fun clickElement(selector: String): Boolean {
-        // Directly call the automation service method without getInstance()
+        // Directly call the automation service method
         return try {
-            val service = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as android.accessibilityservice.AccessibilityService
-            // We can't directly access the service instance, so we'll return false for now
-            // In a real implementation, we would need to use a different approach
-            false
+            val service = AutomationService.getInstance()
+            if (service != null) {
+                return service.clickElement(selector)
+            } else {
+                Log.e(TAG, "AutomationService not available")
+                return false
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error clicking element with selector $selector", e)
             false
@@ -91,11 +94,15 @@ class AndroidAutomationInterface(private val context: Context) {
      */
     @android.webkit.JavascriptInterface
     fun fillFormField(selector: String, text: String): Boolean {
-        // Directly call the automation service method without getInstance()
+        // Directly call the automation service method
         return try {
-            // We can't directly access the service instance, so we'll return false for now
-            // In a real implementation, we would need to use a different approach
-            false
+            val service = AutomationService.getInstance()
+            if (service != null) {
+                return service.fillFormField(selector, text)
+            } else {
+                Log.e(TAG, "AutomationService not available")
+                return false
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error filling form field with selector $selector", e)
             false
@@ -110,10 +117,16 @@ class AndroidAutomationInterface(private val context: Context) {
     @android.webkit.JavascriptInterface
     fun switchToApp(packageName: String): Boolean {
         return try {
-            val intent = context.packageManager.getLaunchIntentForPackage(packageName)
-            intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
-            true
+            val service = AutomationService.getInstance()
+            if (service != null) {
+                return service.switchToApp(packageName)
+            } else {
+                // Fallback to direct intent if service not available
+                val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+                intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                true
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error switching to app $packageName", e)
             false
@@ -126,8 +139,19 @@ class AndroidAutomationInterface(private val context: Context) {
      */
     @android.webkit.JavascriptInterface
     fun getCurrentApp(): String {
-        // We can't directly access the current package, so we'll return empty string
-        return ""
+        // Try to get the current app from the automation service
+        return try {
+            val service = AutomationService.getInstance()
+            if (service != null) {
+                return service.getCurrentApp()
+            } else {
+                // We can't directly access the current package, so we'll return empty string
+                return ""
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting current app", e)
+            return ""
+        }
     }
 
     /**
@@ -137,11 +161,15 @@ class AndroidAutomationInterface(private val context: Context) {
      */
     @android.webkit.JavascriptInterface
     fun longPressElement(selector: String): Boolean {
-        // Directly call the automation service method without getInstance()
+        // Directly call the automation service method
         return try {
-            // We can't directly access the service instance, so we'll return false for now
-            // In a real implementation, we would need to use a different approach
-            false
+            val service = AutomationService.getInstance()
+            if (service != null) {
+                return service.longPressElement(selector)
+            } else {
+                Log.e(TAG, "AutomationService not available")
+                return false
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error long pressing element with selector $selector", e)
             false
@@ -159,11 +187,15 @@ class AndroidAutomationInterface(private val context: Context) {
      */
     @android.webkit.JavascriptInterface
     fun swipe(startX: Int, startY: Int, endX: Int, endY: Int, duration: Int): Boolean {
-        // Directly call the automation service method without getInstance()
+        // Directly call the automation service method
         return try {
-            // We can't directly access the service instance, so we'll return false for now
-            // In a real implementation, we would need to use a different approach
-            false
+            val service = AutomationService.getInstance()
+            if (service != null) {
+                return service.swipe(startX, startY, endX, endY, duration)
+            } else {
+                Log.e(TAG, "AutomationService not available")
+                return false
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error performing swipe", e)
             false
@@ -177,10 +209,15 @@ class AndroidAutomationInterface(private val context: Context) {
      */
     @android.webkit.JavascriptInterface
     fun findElements(selector: String): String {
-        // Directly call the automation service method without getInstance()
+        // Directly call the automation service method
         return try {
-            // We can't directly access the service instance, so we'll return empty array
-            "[]"
+            val service = AutomationService.getInstance()
+            if (service != null) {
+                return service.findElements(selector)
+            } else {
+                Log.e(TAG, "AutomationService not available")
+                return "[]"
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error finding elements with selector $selector", e)
             "[]"

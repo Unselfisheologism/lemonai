@@ -391,7 +391,7 @@ export default {
       apiKeyPlaceholder: "API 키를 입력해주세요",
       apiKey: "API 키",
       apiAddress: "API 주소",
-      tavilyName: "Tavily(키)",
+      perplexityName: "Perplexity(키)",
       baiduName: "바이두(무료)",
       bingName: "Bing(무료)",
       saveBlacklistSuccess: "블랙리스트 저장 성공",
