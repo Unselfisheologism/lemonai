@@ -7,15 +7,106 @@ const gmailPiece = {
     listEmails: {
       description: 'List emails from Gmail',
       run: async ({ auth, params }) => {
-        // In a real implementation, this would connect to Gmail API
-        console.log('Listing emails with params:', params);
-        return {
-          success: true,
-          data: [
-            { id: 1, subject: 'Test Email 1', from: 'test@example.com' },
-            { id: 2, subject: 'Test Email 2', from: 'test2@example.com' }
-          ]
-        };
+        // Validate authentication
+        if (!auth || !auth.accessToken) {
+          throw new Error('Gmail authentication required');
+        }
+        
+        // Extract parameters
+        const {
+          mailbox = 'INBOX',
+          limit = 10,
+          unread = false,
+          query = ''
+        } = params || {};
+        
+        // Build Gmail API URL
+        let apiUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages?labelIds=${mailbox}&maxResults=${limit}`;
+        
+        // Add query parameter if provided
+        if (query) {
+          apiUrl += `&q=${encodeURIComponent(query)}`;
+        }
+        
+        try {
+          // Make API request to Gmail
+          const response = await fetch(apiUrl, {
+            headers: {
+              'Authorization': `Bearer ${auth.accessToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Gmail API error: ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          const messages = data.messages || [];
+          
+          // Get detailed information for each message
+          const emails = [];
+          for (const message of messages) {
+            const messageResponse = await fetch(
+              `https://gmail.googleapis.com/gmail/v1/users/me/messages/${message.id}`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${auth.accessToken}`,
+                  'Content-Type': 'application/json'
+                }
+              }
+            );
+            
+            if (messageResponse.ok) {
+              const messageData = await messageResponse.json();
+              
+              // Extract relevant information
+              const email = {
+                id: messageData.id,
+                threadId: messageData.threadId,
+                snippet: messageData.snippet,
+                subject: '',
+                from: '',
+                to: '',
+                date: messageData.internalDate ? new Date(parseInt(messageData.internalDate)).toISOString() : '',
+                size: messageData.sizeEstimate || 0,
+                labels: messageData.labelIds || []
+              };
+              
+              // Parse headers
+              if (messageData.payload && messageData.payload.headers) {
+                for (const header of messageData.payload.headers) {
+                  if (header.name === 'Subject') {
+                    email.subject = header.value || '';
+                  } else if (header.name === 'From') {
+                    email.from = header.value || '';
+                  } else if (header.name === 'To') {
+                    email.to = header.value || '';
+                  }
+                }
+              }
+              
+              emails.push(email);
+            }
+          }
+          
+          // Apply unread filter if requested
+          let result = emails;
+          if (unread) {
+            result = result.filter(email => email.labels.includes('UNREAD'));
+          }
+          
+          // Apply limit
+          result = result.slice(0, limit);
+          
+          return {
+            success: true,
+            data: result
+          };
+        } catch (error) {
+          console.error('Error listing emails:', error);
+          throw error;
+        }
       }
     },
     sendEmail: {

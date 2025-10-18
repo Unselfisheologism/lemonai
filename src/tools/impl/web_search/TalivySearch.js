@@ -1,6 +1,6 @@
 const axios = require('axios');
 // const { resolveAxiosInstance } = require('@utils/network');
-const HOST = 'https://api.tavily.com/search';
+const HOST = 'https://api.perplexity.com/search';
 
 class TalivySearch {
   constructor({ key: API_KEY }) {
@@ -38,7 +38,7 @@ class TalivySearch {
       this.result = response.data
       return this.result;
     } catch (error) {
-      console.error('TalivySearch error:', error);
+      console.error('PerplexitySearch error:', error);
       throw error;
     }
   }
@@ -80,21 +80,21 @@ class TalivySearch {
 
       if (response.status === 200) {
         // 如果API返回200，即使没有结果，也认为连接成功
-        return { status: 'success', message: 'Tavily Search API connection successful.' };
+        return { status: 'success', message: 'Perplexity Search API connection successful.' };
       } else {
-        return { status: 'fail', message: `Tavily Search API returned status: ${response.status}` };
+        return { status: 'fail', message: `Perplexity Search API returned status: ${response.status}` };
       }
     } catch (error) {
       if (error.response) {
         // API返回了错误响应（例如401，403，404等）
         if (error.response.status === 401) {
-          return { status: 'fail', message: 'Tavily Search API key is invalid or unauthorized.' };
+          return { status: 'fail', message: 'Perplexity Search API key is invalid or unauthorized.' };
         } else {
-          return { status: 'fail', message: `Tavily Search API error: ${error.response.status} - ${error.response.statusText || 'Unknown error'}` };
+          return { status: 'fail', message: `Perplexity Search API error: ${error.response.status} - ${error.response.statusText || 'Unknown error'}` };
         }
       } else if (error.request) {
         // 请求已发出但未收到响应（例如网络问题）
-        return { status: 'fail', message: 'No response received from Tavily Search API. Check network connection.' };
+        return { status: 'fail', message: 'No response received from Perplexity Search API. Check network connection.' };
       } else {
         // 其他错误
         return { status: 'fail', message: `An unexpected error occurred: ${error.message}` };

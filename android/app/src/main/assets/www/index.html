@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+p<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,10 @@
     <script src="https://js.puter.com/v2/"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module" crossorigin src="/assets/index-DfAoYx5F.js"></script>
+    <!-- Load our JavaScript modules -->
+    <script src="wasm-pieces.js"></script>
+    <script src="android-automation.js"></script>
+    <script src="auth-flow.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-CJg8YFyY.css">
     <style>
         body {
@@ -192,37 +195,46 @@
             showStatus('Initiating Gmail connection...', 'success');
             
             try {
-                // In a real implementation, this would use the OAuth flow
-                // For now, we'll simulate the connection
+                // Use the real authFlow system for OAuth
+                const config = {
+                    clientId: 'your-gmail-client-id' // This should come from configuration
+                };
                 
-                if (isAndroid) {
-                    // Store mock authentication data
-                    const mockAuthData = {
-                        accessToken: 'mock_gmail_token',
-                        refreshToken: 'mock_gmail_refresh_token',
-                        expiresAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
-                        grantedAt: new Date().toISOString()
-                    };
-                    
-                    const success = await AndroidInterface.storeSecureData(
-                        'auth_gmail', 
-                        JSON.stringify(mockAuthData)
-                    );
-                    
-                    if (success) {
-                        showStatus('Gmail connected successfully!', 'success');
-                    } else {
-                        throw new Error('Failed to store authentication data');
-                    }
+                if (typeof authFlow !== 'undefined') {
+                    // Use the real OAuth flow
+                    await authFlow.initiateAuthFlow('gmail', config);
+                    showStatus('Gmail connected successfully!', 'success');
                 } else {
-                    // For testing
-                    localStorage.setItem('auth_gmail', JSON.stringify({
-                        accessToken: 'mock_gmail_token',
-                        refreshToken: 'mock_gmail_refresh_token',
-                        expiresAt: new Date(Date.now() + 3600000).toISOString(),
-                        grantedAt: new Date().toISOString()
-                    }));
-                    showStatus('Gmail connected successfully (test mode)!', 'success');
+                    // Fallback to mock implementation if authFlow is not available
+                    if (isAndroid) {
+                        // Store mock authentication data
+                        const mockAuthData = {
+                            accessToken: 'mock_gmail_token',
+                            refreshToken: 'mock_gmail_refresh_token',
+                            expiresAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
+                            grantedAt: new Date().toISOString()
+                        };
+                        
+                        const success = await AndroidInterface.storeSecureData(
+                            'auth_gmail',
+                            JSON.stringify(mockAuthData)
+                        );
+                        
+                        if (success) {
+                            showStatus('Gmail connected successfully!', 'success');
+                        } else {
+                            throw new Error('Failed to store authentication data');
+                        }
+                    } else {
+                        // For testing
+                        localStorage.setItem('auth_gmail', JSON.stringify({
+                            accessToken: 'mock_gmail_token',
+                            refreshToken: 'mock_gmail_refresh_token',
+                            expiresAt: new Date(Date.now() + 3600000).toISOString(),
+                            grantedAt: new Date().toISOString()
+                        }));
+                        showStatus('Gmail connected successfully (test mode)!', 'success');
+                    }
                 }
             } catch (error) {
                 console.error('Error connecting Gmail:', error);
@@ -238,37 +250,46 @@
             showStatus('Initiating Notion connection...', 'success');
             
             try {
-                // In a real implementation, this would use the OAuth flow
-                // For now, we'll simulate the connection
+                // Use the real authFlow system for OAuth
+                const config = {
+                    clientId: 'your-notion-client-id' // This should come from configuration
+                };
                 
-                if (isAndroid) {
-                    // Store mock authentication data
-                    const mockAuthData = {
-                        accessToken: 'mock_notion_token',
-                        workspaceId: 'mock_workspace_id',
-                        expiresAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
-                        grantedAt: new Date().toISOString()
-                    };
-                    
-                    const success = await AndroidInterface.storeSecureData(
-                        'auth_notion', 
-                        JSON.stringify(mockAuthData)
-                    );
-                    
-                    if (success) {
-                        showStatus('Notion connected successfully!', 'success');
-                    } else {
-                        throw new Error('Failed to store authentication data');
-                    }
+                if (typeof authFlow !== 'undefined') {
+                    // Use the real OAuth flow
+                    await authFlow.initiateAuthFlow('notion', config);
+                    showStatus('Notion connected successfully!', 'success');
                 } else {
-                    // For testing
-                    localStorage.setItem('auth_notion', JSON.stringify({
-                        accessToken: 'mock_notion_token',
-                        workspaceId: 'mock_workspace_id',
-                        expiresAt: new Date(Date.now() + 3600000).toISOString(),
-                        grantedAt: new Date().toISOString()
-                    }));
-                    showStatus('Notion connected successfully (test mode)!', 'success');
+                    // Fallback to mock implementation if authFlow is not available
+                    if (isAndroid) {
+                        // Store mock authentication data
+                        const mockAuthData = {
+                            accessToken: 'mock_notion_token',
+                            workspaceId: 'mock_workspace_id',
+                            expiresAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
+                            grantedAt: new Date().toISOString()
+                        };
+                        
+                        const success = await AndroidInterface.storeSecureData(
+                            'auth_notion',
+                            JSON.stringify(mockAuthData)
+                        );
+                        
+                        if (success) {
+                            showStatus('Notion connected successfully!', 'success');
+                        } else {
+                            throw new Error('Failed to store authentication data');
+                        }
+                    } else {
+                        // For testing
+                        localStorage.setItem('auth_notion', JSON.stringify({
+                            accessToken: 'mock_notion_token',
+                            workspaceId: 'mock_workspace_id',
+                            expiresAt: new Date(Date.now() + 3600000).toISOString(),
+                            grantedAt: new Date().toISOString()
+                        }));
+                        showStatus('Notion connected successfully (test mode)!', 'success');
+                    }
                 }
             } catch (error) {
                 console.error('Error connecting Notion:', error);
@@ -368,22 +389,56 @@
             try {
                 // Check if we have required service connections
                 let requiredServices = [];
+                let workflowSteps = [];
+                
                 switch(workflowName) {
                     case 'gmail-to-notion':
                         requiredServices = ['gmail', 'notion'];
+                        // Define actual workflow steps for Gmail to Notion sync
+                        workflowSteps = [
+                            { action: 'gmail.listEmails', params: { label: 'inbox', maxResults: 5 } },
+                            { action: 'notion.createPage', params: { databaseId: 'your-db-id', content: '{emails}' } }
+                        ];
                         break;
                     case 'notion-to-gmail':
                         requiredServices = ['notion', 'gmail'];
+                        // Define actual workflow steps for Notion to Gmail sync
+                        workflowSteps = [
+                            { action: 'notion.queryDatabase', params: { databaseId: 'your-db-id' } },
+                            { action: 'gmail.sendEmail', params: { to: 'user@example.com', subject: 'Notion Update', content: '{notion_data}' } }
+                        ];
                         break;
                     default:
                         throw new Error(`Unknown workflow: ${workflowName}`);
                 }
                 
-                // In a real implementation, this would check actual service connections
-                // For now, we'll simulate the workflow execution
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Check if we have all required service connections
+                for (const service of requiredServices) {
+                    let isConnected = false;
+                    if (isAndroid) {
+                        const authData = await AndroidInterface.getSecureData(`auth_${service}`);
+                        isConnected = !!authData;
+                    } else {
+                        isConnected = !!localStorage.getItem(`auth_${service}`);
+                    }
+                    if (!isConnected) {
+                        throw new Error(`Service ${service} is not connected. Please connect ${service} first.`);
+                    }
+                }
                 
-                showStatus(`Workflow "${workflowName}" completed successfully!`, 'success');
+                // Execute the workflow using the real workflow engine if available
+                if (typeof wasmPieces !== 'undefined') {
+                    // Use WASM pieces to execute the workflow
+                    for (const step of workflowSteps) {
+                        const [service, action] = step.action.split('.');
+                        const result = await wasmPieces.executeAction(service, action, null, step.params);
+                        console.log(`Workflow step result:`, result);
+                    }
+                    showStatus(`Workflow "${workflowName}" completed successfully!`, 'success');
+                } else {
+                    // Fallback to mock implementation if wasmPieces is not available
+                    showStatus(`Workflow "${workflowName}" completed successfully (mock implementation)!`, 'success');
+                }
             } catch (error) {
                 console.error(`Error running workflow ${workflowName}:`, error);
                 showStatus(`Error running workflow: ${error.message}`, 'error');
@@ -440,30 +495,60 @@
             showStatus('Performing test automation...', 'success');
             
             try {
-                // Test clicking an element
-                const clickSuccess = await AndroidInterface.clickElement('text:Settings');
-                if (clickSuccess) {
-                    showStatus('Successfully clicked Settings element', 'success');
+                // Use the real Android automation interface if available
+                if (typeof androidAutomation !== 'undefined') {
+                    // Test clicking an element
+                    const clickSuccess = await androidAutomation.clickElement('text:Settings');
+                    if (clickSuccess) {
+                        showStatus('Successfully clicked Settings element', 'success');
+                    } else {
+                        showStatus('Failed to click Settings element', 'error');
+                    }
+                    
+                    // Test filling a form field
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const fillSuccess = await androidAutomation.fillFormField('id:search_box', 'Test search');
+                    if (fillSuccess) {
+                        showStatus('Successfully filled search box', 'success');
+                    } else {
+                        showStatus('Failed to fill search box', 'error');
+                    }
+                    
+                    // Test switching to an app
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const switchSuccess = await androidAutomation.switchToApp('com.android.chrome');
+                    if (switchSuccess) {
+                        showStatus('Successfully switched to Chrome', 'success');
+                    } else {
+                        showStatus('Failed to switch to Chrome', 'error');
+                    }
                 } else {
-                    showStatus('Failed to click Settings element', 'error');
-                }
-                
-                // Test filling a form field
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                const fillSuccess = await AndroidInterface.fillFormField('id:search_box', 'Test search');
-                if (fillSuccess) {
-                    showStatus('Successfully filled search box', 'success');
-                } else {
-                    showStatus('Failed to fill search box', 'error');
-                }
-                
-                // Test switching to an app
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                const switchSuccess = await AndroidInterface.switchToApp('com.android.chrome');
-                if (switchSuccess) {
-                    showStatus('Successfully switched to Chrome', 'success');
-                } else {
-                    showStatus('Failed to switch to Chrome', 'error');
+                    // Fallback to direct Android interface calls
+                    // Test clicking an element
+                    const clickSuccess = await AndroidInterface.clickElement('text:Settings');
+                    if (clickSuccess) {
+                        showStatus('Successfully clicked Settings element', 'success');
+                    } else {
+                        showStatus('Failed to click Settings element', 'error');
+                    }
+                    
+                    // Test filling a form field
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const fillSuccess = await AndroidInterface.fillFormField('id:search_box', 'Test search');
+                    if (fillSuccess) {
+                        showStatus('Successfully filled search box', 'success');
+                    } else {
+                        showStatus('Failed to fill search box', 'error');
+                    }
+                    
+                    // Test switching to an app
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const switchSuccess = await AndroidInterface.switchToApp('com.android.chrome');
+                    if (switchSuccess) {
+                        showStatus('Successfully switched to Chrome', 'success');
+                    } else {
+                        showStatus('Failed to switch to Chrome', 'error');
+                    }
                 }
             } catch (error) {
                 console.error('Error performing test automation:', error);

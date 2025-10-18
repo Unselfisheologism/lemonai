@@ -638,7 +638,7 @@ export default {
       apiKeyPlaceholder: "输入您的API密钥",
       apiKey: "API密钥",
       apiAddress: "API地址",
-      tavilyName: "Tavily（密钥）",
+      perplexityName: "Perplexity（密钥）",
       baiduName: "百度（免费）",
       bingName: "必应（免费）",
       couldswayName: "Cloudsway（密钥）",

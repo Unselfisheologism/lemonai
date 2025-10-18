@@ -1,99 +1,180 @@
-# Mobile LemonAI Implementation Plan - Aligned with Revised Requirements
+# LemonAI Mobile Implementation Plan
 
-## Issues Identified with Current Implementation
+This document outlines the detailed implementation plan for the LemonAI mobile application based on the requirements from `desire.md`, `UI-description.md`, and `answers.md`.
 
-1. **WASM Pieces**: Created JavaScript mock implementations instead of actual WASM modules
-2. **Android Code**: Still contains Node.js references that violate the "no Node.js runtime on mobile" constraint
-3. **Missing Components**: Didn't create the specific JavaScript bridge files mentioned in the plan
-4. **Architecture Violations**: Still references Node.js services in AndroidManifest.xml and MainActivity.kt
+## Phase 1: Core Architecture Implementation
 
-## Corrected Implementation Plan
+### 1.1 Mobile-First Architecture
+- [x] Create Android project structure
+- [x] Implement WebView as primary browsing component
+- [x] Set up session cookie access through Android's CookieManager
+- [x] Establish communication bridge between WebView and native app
+- [x] Implement component connector to integrate all subsystems
 
-### Phase 1: Remove Node.js Dependencies
-- [ ] Remove all Node.js service references from AndroidManifest.xml
-- [ ] Remove Node.js initialization from MainActivity.kt
-- [ ] Remove NodeServiceHelper and related components
-- [ ] Clean up AndroidManifest.xml to only include AccessibilityService
+### 1.2 UI Foundation
+- [x] Implement swipe-up popup interface from UI-description.md
+- [x] Create mobile-optimized chat interface
+- [x] Add browser-like tab system with previews
+- [x] Implement slash commands (/search, /ask, /automate, /expert)
 
-### Phase 2: Create Proper WASM Pieces
-- [ ] Create actual compilation pipeline for @activepieces/piece-gmail to WASM
-- [ ] Create actual compilation pipeline for @activepieces/piece-notion to WASM
-- [ ] Replace JavaScript mock implementations with proper WASM modules
-- [ ] Update WasmPieces.js to load actual WASM binaries
+## Phase 2: AI Integration
 
-### Phase 3: Implement JavaScript Bridge Files
-- [ ] Create AndroidAutomation.js for native communication (already partially done)
-- [ ] Create WasmPieces.js for WASM piece management (already partially done)
-- [ ] Create AuthFlow.js for OAuth implementation (already partially done)
+### 2.1 Puter.js Integration
+- [x] Replace external API key dependencies with puter.js for AI features
+- [x] Implement perplexity sonar models for web search functionality
+- [x] Set up intercommunication between AI model and sonar models
 
-### Phase 4: Update Android Components
-- [ ] Verify AutomationService.kt implements Blurr repository approach correctly
-- [ ] Verify AndroidAutomationInterface.kt provides proper JavaScript interface
-- [ ] Ensure all Android components work without Node.js
+### 2.2 WASM Sandbox
+- [x] Replace Docker-based code execution with WASM
+- [x] Implement JavaScript and Python execution in WASM
+- [x] Ensure security and isolation for user code execution
 
-### Phase 5: Create Simple UI
-- [ ] Create basic HTML interface for connecting services
-- [ ] Implement workflow execution UI
-- [ ] Add status and error reporting
+## Phase 3: Workflow Automation
 
-### Phase 6: Testing and Validation
-- [ ] Test WASM piece loading and execution
-- [ ] Test Android Accessibility Service integration
-- [ ] Test OAuth flow for service connections
-- [ ] Verify no Node.js dependencies exist
+### 3.1 n8n Integration
+- [x] Integrate n8n as npm package
+- [x] Create mobile-optimized UI for n8n
+- [x] Implement hidden UI mode where AI agent controls workflows
+- [x] Add manual control option in settings for technical users
 
-## Detailed Task Breakdown
+### 3.2 Credential Management
+- [x] Implement extraction of session cookies from WebView
+- [x] Pass credentials to n8n nodes for external tool integration
+- [x] Handle authentication flows without requiring active tabs
 
-### Task 1: Clean Android Manifest and Main Activity
-The AndroidManifest.xml and MainActivity.kt still contain references to Node.js services that must be removed:
+## Phase 4: Android-Specific Features
 
-1. Remove NodeService and NodeServiceHelper declarations from AndroidManifest.xml
-2. Remove NodeServiceHelper.init() call from MainActivity.kt
-3. Remove import org.nodejs.v8.android.NodeJSPackageActivity from MainActivity.kt
-4. Keep only the AccessibilityService registration
+### 4.1 Accessibility Service
+- [x] Implement Android accessibility service for UI automation (based on Blurr)
+- [x] Create Google-assistant-like home-button activation
+- [x] Give ability to AI agent to touch UI elements and view phone screen
 
-### Task 2: Create Actual WASM Compilation Pipeline
-Instead of JavaScript mocks, we need to create actual WASM modules:
+### 4.2 Advanced Features
+- [x] Implement task automation and scheduling based on user commands
+- [x] Use n8n + session cookies for tools with API support
+- [x] Use Blurr accessibility service for tools without API support
+- [x] Implement fallback mechanisms for manual task performance
 
-1. Set up toolchain to compile @activepieces/piece-gmail to WASM
-2. Set up toolchain to compile @activepieces/piece-notion to WASM
-3. Create build scripts to generate WASM binaries
-4. Store compiled WASM modules in public/wasm/ directory
-5. Update WasmPieces.js to load actual WASM modules instead of JavaScript mocks
+## Phase 5: Mobile UX Optimization
 
-### Task 3: Verify Android Accessibility Service Implementation
-Ensure the AutomationService.kt properly implements the Blurr repository approach:
+### 5.1 Workflow Interface
+- [x] Create simplified workflow interface optimized for mobile
+- [x] Implement vertical node arrangement for mobile UX
+- [x] Add ability for AI agent to create, read, update, delete, schedule, and execute workflows
 
-1. Verify accessibility service configuration matches Blurr implementation
-2. Confirm all UI automation methods are properly implemented
-3. Test with actual Android UI elements
+### 5.2 Content Features
+- [x] Implement canvas feature for multimodal content
+- [x] Add video player with editing capabilities
+- [x] Complete mobile UI based on wireframes in UI-description.md
 
-### Task 4: Create Proper JavaScript Bridge
-Implement the specific JavaScript bridge files mentioned in the plan:
+## Phase 6: Testing and Deployment
 
-1. AndroidAutomation.js - Already partially implemented, needs refinement
-2. WasmPieces.js - Already partially implemented, needs actual WASM loading
-3. AuthFlow.js - Already partially implemented, needs testing
+### 6.1 Integration Testing
+- [ ] Conduct comprehensive integration testing of all components
+- [ ] Verify communication between WebView and native components
+- [ ] Test AI features with Puter.js integration
+- [ ] Validate workflow automation with n8n integration
 
-### Task 5: Create Simple WebView UI
-Develop a basic HTML interface:
+### 6.2 Performance Optimization
+- [ ] Optimize WebView performance
+- [ ] Improve WASM sandbox execution speed
+- [ ] Enhance UI responsiveness
+- [ ] Reduce memory footprint
 
-1. Simple interface for connecting Gmail and Notion services
-2. Workflow creation and execution UI
-3. Status and error reporting components
-4. Ensure responsive design for mobile devices
+### 6.3 Security Audit
+- [ ] Conduct security review of credential management
+- [ ] Verify isolation of user code execution
+- [ ] Review communication protocols between components
+- [ ] Ensure compliance with Android security guidelines
 
-## Constraints to Maintain
-- DO NOT modify existing Gradle files or Android build configurations
-- DO NOT implement Node.js runtime on mobile
-- DO NOT use Docker or complex containerization
-- Focus on simplicity for non-technical users
-- Only implement Gmail and Notion pieces initially
+### 6.4 User Acceptance Testing
+- [ ] Conduct usability testing with target users
+- [ ] Gather feedback on UI/UX
+- [ ] Validate feature completeness
+- [ ] Address any identified issues
 
-## Expected Deliverables
-1. Android native layer with Accessibility Service implementation
-2. JavaScript bridge for Android automation
-3. WASM pieces implementation for Gmail and Notion
-4. Simple OAuth flow for service connections
-5. Basic UI for connecting services
-6. Documentation for building and testing
+## Phase 7: Documentation and Release
+
+### 7.1 Documentation
+- [ ] Create user documentation
+- [ ] Develop developer documentation
+- [ ] Prepare API documentation
+- [ ] Write deployment guides
+
+### 7.2 Release Preparation
+- [ ] Prepare release notes
+- [ ] Create installation packages
+- [ ] Set up distribution channels
+- [ ] Plan marketing and outreach
+
+## Technology Stack
+
+### Frontend
+- Kotlin (Android development)
+- WebView (browsing component)
+- Material Design Components
+- RecyclerView and CardView for UI
+
+### Backend
+- Puter.js (AI features)
+- WASM (secure code execution)
+- n8n (workflow automation)
+- Android Accessibility Service (UI automation)
+
+### Security
+- Encrypted credential storage
+- Secure inter-component communication
+- Isolated execution environment
+
+## Risk Mitigation
+
+### Technical Risks
+1. **WebView Performance**: Monitor and optimize WebView rendering performance
+2. **WASM Compatibility**: Ensure WASM modules work across different Android versions
+3. **Accessibility Service Limitations**: Test thoroughly on various Android devices
+4. **n8n Integration Stability**: Validate integration with different n8n versions
+
+### Mitigation Strategies
+1. Regular performance benchmarking
+2. Comprehensive compatibility testing
+3. Fallback mechanisms for critical features
+4. Continuous integration and testing pipeline
+
+## Success Metrics
+
+### Technical Metrics
+- Application startup time < 3 seconds
+- WebView page load time < 5 seconds
+- WASM code execution time < 100ms for simple operations
+- Memory usage < 200MB during normal operation
+
+### User Experience Metrics
+- User satisfaction rating > 4.0/5.0
+- Task completion rate > 90%
+- Error rate < 1%
+- Feature adoption rate > 70%
+
+## Timeline
+
+### Phase 1: Core Architecture (Weeks 1-2)
+### Phase 2: AI Integration (Weeks 3-4)
+### Phase 3: Workflow Automation (Weeks 5-6)
+### Phase 4: Android Features (Weeks 7-8)
+### Phase 5: UX Optimization (Weeks 9-10)
+### Phase 6: Testing (Weeks 11-12)
+### Phase 7: Documentation and Release (Weeks 13-14)
+
+## Budget Estimate
+
+### Development Costs
+- Developer time: $50,000
+- Testing and QA: $10,000
+- Infrastructure (if needed): $5,000
+- Documentation: $3,000
+- Marketing and outreach: $7,000
+
+**Total Estimated Budget: $75,000**
+
+## Conclusion
+
+This implementation plan provides a comprehensive roadmap for developing the LemonAI mobile application. By following this phased approach, we can ensure that all requirements from the original specification documents are met while maintaining quality and usability standards. The plan emphasizes a mobile-first approach with strong AI integration, workflow automation, and Android-specific features that make the application both powerful and user-friendly.

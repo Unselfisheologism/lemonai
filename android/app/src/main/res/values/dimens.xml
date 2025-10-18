@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Default screen margins -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    
+    <!-- Top bar dimensions -->
+    <dimen name="top_bar_height">56dp</dimen>
+    <dimen name="top_bar_icon_size">24dp</dimen>
+    <dimen name="top_bar_title_text_size">20sp</dimen>
+    
+    <!-- Button dimensions -->
+    <dimen name="button_width">64dp</dimen>
+    <dimen name="button_height">48dp</dimen>
+    <dimen name="button_corner_radius">8dp</dimen>
+    <dimen name="button_elevation">4dp</dimen>
+    <dimen name="button_text_size">16sp</dimen>
+    
+    <!-- Input field dimensions -->
+    <dimen name="input_height">56dp</dimen>
+    <dimen name="input_padding_horizontal">16dp</dimen>
+    <dimen name="input_padding_vertical">12dp</dimen>
+    <dimen name="input_text_size">16sp</dimen>
+    <dimen name="input_corner_radius">8dp</dimen>
+    
+    <!-- Popup dimensions -->
+    <dimen name="popup_height">300dp</dimen>
+    <dimen name="popup_corner_radius">16dp</dimen>
+    <dimen name="popup_elevation">16dp</dimen>
+    
+    <!-- Chat interface dimensions -->
+    <dimen name="chat_message_padding">16dp</dimen>
+    <dimen name="chat_message_spacing">8dp</dimen>
+    <dimen name="chat_user_message_background_radius">16dp</dimen>
+    <dimen name="chat_ai_message_background_radius">16dp</dimen>
+    
+    <!-- Tab system dimensions -->
+    <dimen name="tab_width">120dp</dimen>
+    <dimen name="tab_height">140dp</dimen>
+    <dimen name="tab_corner_radius">8dp</dimen>
+    <dimen name="tab_elevation">4dp</dimen>
+    <dimen name="tab_indicator_size">16dp</dimen>
+    <dimen name="tab_title_text_size">12sp</dimen>
+    
+    <!-- Workflow builder dimensions -->
+    <dimen name="workflow_node_width">match_parent</dimen>
+    <dimen name="workflow_node_height">wrap_content</dimen>
+    <dimen name="workflow_node_corner_radius">8dp</dimen>
+    <dimen name="workflow_node_elevation">4dp</dimen>
+    <dimen name="workflow_node_padding">16dp</dimen>
+    <dimen name="workflow_node_spacing">16dp</dimen>
+    
+    <!-- Canvas feature dimensions -->
+    <dimen name="canvas_item_width">match_parent</dimen>
+    <dimen name="canvas_item_height">200dp</dimen>
+    <dimen name="canvas_item_corner_radius">8dp</dimen>
+    <dimen name="canvas_item_elevation">2dp</dimen>
+    <dimen name="canvas_item_margin">8dp</dimen>
+    
+    <!-- Video player dimensions -->
+    <dimen name="video_player_height">200dp</dimen>
+    <dimen name="video_player_control_height">48dp</dimen>
+    <dimen name="video_player_seekbar_height">4dp</dimen>
+    
+    <!-- Icon sizes -->
+    <dimen name="icon_size_small">16dp</dimen>
+    <dimen name="icon_size_medium">24dp</dimen>
+    <dimen name="icon_size_large">32dp</dimen>
+    <dimen name="icon_size_extra_large">48dp</dimen>
+    
+    <!-- Text sizes -->
+    <dimen name="text_size_extra_small">10sp</dimen>
+    <dimen name="text_size_small">12sp</dimen>
+    <dimen name="text_size_medium">14sp</dimen>
+    <dimen name="text_size_large">16sp</dimen>
+    <dimen name="text_size_extra_large">18sp</dimen>
+    <dimen name="text_size_heading">24sp</dimen>
+    <dimen name="text_size_display">32sp</dimen>
+    
+    <!-- Padding dimensions -->
+    <dimen name="padding_extra_small">4dp</dimen>
+    <dimen name="padding_small">8dp</dimen>
+    <dimen name="padding_medium">16dp</dimen>
+    <dimen name="padding_large">24dp</dimen>
+    <dimen name="padding_extra_large">32dp</dimen>
+    
+    <!-- Margin dimensions -->
+    <dimen name="margin_extra_small">4dp</dimen>
+    <dimen name="margin_small">8dp</dimen>
+    <dimen name="margin_medium">16dp</dimen>
+    <dimen name="margin_large">24dp</dimen>
+    <dimen name="margin_extra_large">32dp</dimen>
+    
+    <!-- Divider dimensions -->
+    <dimen name="divider_height">1dp</dimen>
+    <dimen name="divider_width">match_parent</dimen>
+    
+    <!-- Card dimensions -->
+    <dimen name="card_corner_radius">8dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="card_margin">8dp</dimen>
+    
+    <!-- Floating action button dimensions -->
+    <dimen name="fab_size">56dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    
+    <!-- Snackbar dimensions -->
+    <dimen name="snackbar_height">48dp</dimen>
+    <dimen name="snackbar_margin">8dp</dimen>
+    
+    <!-- Progress bar dimensions -->
+    <dimen name="progress_bar_height">4dp</dimen>
+    
+    <!-- Accessibility service dimensions -->
+    <dimen name="accessibility_button_size">64dp</dimen>
+    <dimen name="accessibility_button_margin">16dp</dimen>
+    
+    <!-- Home button dimensions -->
+    <dimen name="home_button_size">64dp</dimen>
+    <dimen name="home_button_corner_radius">32dp</dimen>
+    
+    <!-- Indicator dimensions -->
+    <dimen name="indicator_size">16dp</dimen>
+    <dimen name="indicator_spacing">4dp</dimen>
+    
+    <!-- Swipe gesture dimensions -->
+    <dimen name="swipe_threshold">100dp</dimen>
+    <dimen name="swipe_velocity_threshold">1000dp</dimen>
+</resources>

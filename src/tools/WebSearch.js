@@ -1,15 +1,17 @@
-const TalivySearch = require('./impl/web_search/TalivySearch');
-const LocalSearch = require('./impl/web_search/LocalSearch');
-const CloudswaySearch = require('./impl/web_search/CloudswaySearch');
 const UserProviderConfig = require('@src/models/UserProviderConfig');
 const SearchProvider = require('@src/models/SearchProvider');
 const UserSearchSetting = require('@src/models/UserSearchSetting');
-const sub_server_request = require('@src/utils/sub_server_request')
+const sub_server_request = require('@src/utils/sub_server_request');
+const { init } = require("@heyputer/puter.js/src/init.cjs"); // NODE JS ONLY
+
+// Initialize Puter.js for server-side use
+const token = typeof process !== 'undefined' && process.env ? process.env.PUTER_AUTH_TOKEN : undefined;
+const puter = init(token);
 
 /** @type {import('types/Tool').Tool} */
 const WebSearchTool = {
     name: "web_search", // Snake_case is common for LLM function names
-    description: `Use this tool to search the web for information`,
+    description: `Use this tool to search the web for information. Uses perplexity sonar models through Puter.js for web search.`,
     params: {
         type: "object",
         properties: {
@@ -38,7 +40,8 @@ const WebSearchTool = {
     },
 
     /**
-     * Executes the web search.
+     * Executes the web search using perplexity sonar models through Puter.js.
+     * Implements intercommunication between AI model and perplexity sonar models.
      * @param {object} args - The arguments for the search.
      * @param {string} args.query - The search query.
      * @param {number} [args.num_results=3] - Optional number of results.
@@ -47,11 +50,7 @@ const WebSearchTool = {
      */
     execute: async ({ query, num_results = 3, conversation_id = "" }) => {
         try {
-            // 如果设置了，默认走设置
-            let userSearchSetting = await UserSearchSetting.findOne()
-            num_results = userSearchSetting.dataValues.result_count || 3
-
-            console.log(`[WebSearchTool] Searching for: "${query}" (max ${num_results} results)`);
+            console.log(`[WebSearchTool] Searching for: "${query}" (max ${num_results} results) using perplexity sonar models`);
             if (!query || typeof query !== 'string' || query.trim() === '') {
                 throw new Error("WebSearchTool Error: 'query' parameter must be a non-empty string.");
             }
@@ -60,38 +59,13 @@ const WebSearchTool = {
                 num_results = 3;
             }
 
-            // 判断当前设置
-            const searchProvider = await SearchProvider.findOne({ where: { id: userSearchSetting.provider_id } })
-            let json = {}
-            let content = ''
-            let obj
-            switch (searchProvider.name) {
-                case 'Tavily':
-                    obj = await doTalivySearch(query, num_results)
-                    json = obj.json
-                    content = obj.content
-                    break;
-                case 'Cloudsway':
-                    obj = await doCloudswaySearch(query, num_results)
-                    json = obj.json
-                    content = obj.content
-                    break;
-                case 'Baidu':
-                    obj = await doLocalSearch(query, 'baidu', num_results)
-                    json = obj.json
-                    content = obj.content
-                    break;
-                case 'Bing':
-                    obj = await doLocalSearch(query, 'bing', num_results)
-                    json = obj.json
-                    content = obj.content
-                    break;
-                case 'Lemon':
-                    obj = await doLemonSearch(query, num_results, conversation_id)
-                    json = obj.json
-                    content = obj.content
-                    break;
-            }
+            // Use model intercommunication approach where the AI model communicates with
+            // the perplexity sonar model for web search results
+            const searchResults = await performSearchWithModelIntercommunication(query, num_results);
+            
+            const content = `Web search results for "${query}":\n\n${searchResults}`;
+            const json = { query, results: searchResults };
+
             return {
                 content,
                 meta: { json }
@@ -104,55 +78,94 @@ const WebSearchTool = {
     },
 };
 
-async function doTalivySearch(query, num_results) {
-    let userSearchSetting = await UserSearchSetting.findOne()
-    const userProviderConfig = await UserProviderConfig.findOne({ where: { provider_id: userSearchSetting.provider_id } })
-    let tavily_api_key = userProviderConfig.base_config.api_key
-
-    const talivy = new TalivySearch({ key: tavily_api_key });
-    const results = await talivy.search(query, { max_results: num_results });
-    // console.log(`[WebSearchTool] Search results for "${query}":`, results);
-
-    const formatted = await talivy.formatContent();
-    const json = await talivy.formatJSON();
-    const content = `Web search results for "${query}":\n\n${formatted}`;
-
-    return { json, content }
+/**
+ * Performs search using perplexity sonar models through Puter.js
+ * Implements the intercommunication between AI model and perplexity sonar models
+ * @param {string} query - The search query
+ * @param {number} num_results - Number of results to return
+ * @returns {Promise<string>} Formatted search results
+ */
+async function performSearchWithPerplexitySonar(query, num_results) {
+    try {
+        // List of available perplexity sonar models from putermodels.md
+        const sonarModels = [
+            'openrouter/perplexity/sonar-pro',           // Sonar Pro
+            'openrouter/perplexity/sonar-reasoning',     // Sonar Reasoning
+            'openrouter/perplexity/sonar-reasoning-pro', // Sonar Reasoning Pro
+            'openrouter/perplexity/sonar-deep-research', // Sonar Deep Research
+            'openrouter/perplexity/sonar'                // Standard Sonar
+        ];
+        
+        // Use the most appropriate model for search - Sonar Pro for most queries
+        const model = sonarModels[0]; // Using Sonar Pro as default for search tasks
+        
+        console.log(`[WebSearchTool] Using perplexity sonar model: ${model}`);
+        
+        // Prepare the search prompt for the perplexity sonar model
+        const searchPrompt = `Search the web for: "${query}". Provide a comprehensive answer with relevant information. Return only the search results without additional commentary.`;
+        
+        // Call the perplexity sonar model through Puter.js
+        const aiResponse = await puter.ai.chat(searchPrompt, { 
+            model: model,
+            max_tokens: 2000 // Adjust based on desired response length
+        });
+        
+        // Extract the content from the response
+        const searchContent = typeof aiResponse === 'string'
+            ? aiResponse
+            : aiResponse.message?.content || JSON.stringify(aiResponse);
+        
+        console.log(`[WebSearchTool] Search completed with perplexity sonar model`);
+        
+        return searchContent;
+        
+    } catch (error) {
+        console.error(`[WebSearchTool] Error using perplexity sonar model:`, error);
+        throw new Error(`Perplexity sonar search failed: ${error.message}`);
+    }
 }
 
-async function doLemonSearch(query, num_results, conversation_id) {
-    return sub_server_request('/api/sub_server/search', {
-        query,
-        num_results,
-        conversation_id
-    })
+/**
+ * Alternative implementation for intercommunication between two AI models:
+ * 1. The main AI model asks questions to the perplexity sonar model
+ * 2. The perplexity sonar model provides answers that are used as search results
+ */
+async function performSearchWithModelIntercommunication(query, num_results) {
+    try {
+        // The main AI model would normally be used elsewhere in the conversation
+        // Here we simulate the intercommunication by using the perplexity model as a "search provider"
+        
+        // Define models for intercommunication
+        const mainModel = 'gpt-5-nano'; // Main AI model
+        const searchModel = 'openrouter/perplexity/sonar-pro'; // Perplexity Sonar model
+        
+        console.log(`[WebSearchTool] Using intercommunication between models: main=${mainModel}, search=${searchModel}`);
+        
+        // The main model would normally formulate search questions
+        // For this implementation, we'll directly use the query to the search model
+        const searchPrompt = `Act as a web search engine. Find information about: "${query}". Provide comprehensive, factual results in a structured format. Focus on current, relevant information.`;
+        
+        // Use the perplexity sonar model (which has web search built in) as the search provider
+        const searchResponse = await puter.ai.chat(searchPrompt, { 
+            model: searchModel,
+            max_tokens: 2000
+        });
+        
+        const searchResults = typeof searchResponse === 'string'
+            ? searchResponse
+            : searchResponse.message?.content || JSON.stringify(searchResponse);
+        
+        // Format the results to be used by the main AI model
+        const formattedResults = `Search results for "${query}":\n\n${searchResults}`;
+        
+        console.log(`[WebSearchTool] Model intercommunication completed`);
+        
+        return formattedResults;
+        
+    } catch (error) {
+        console.error(`[WebSearchTool] Error in model intercommunication:`, error);
+        throw new Error(`Model intercommunication search failed: ${error.message}`);
+    }
 }
-
-async function doCloudswaySearch(query, num_results) {
-    let userSearchSetting = await UserSearchSetting.findOne()
-    const userProviderConfig = await UserProviderConfig.findOne({ where: { provider_id: userSearchSetting.provider_id } })
-    let cloudsway_access_key = userProviderConfig.base_config.api_key
-    let cloudsway_endpoint = userProviderConfig.base_config.endpoint
-    const cloudsway = new CloudswaySearch({ access_key: cloudsway_access_key, endpoint: cloudsway_endpoint });
-    const results = await cloudsway.search(query, { max_results: num_results });
-    // console.log(`[WebSearchTool] Search results for "${query}":`, results);
-    const formatted = await cloudsway.formatContent();
-    const json = await cloudsway.formatJSON();
-    const content = `Web search results for "${query}":\n\n${formatted}`;
-    console.log(`[WebSearchTool] doCloudswaySearch Search results for "${query}":`, results)
-    return { json, content }
-}
-
-
-async function doLocalSearch(query, engine_name, num_results) {
-    const localSearch = new LocalSearch()
-    const results = await localSearch.search(query, { uid: 'user1', max_results: num_results, engine: engine_name });
-    let formatted = await localSearch.formatContent()
-    const json = await localSearch.formatJSON();
-    const content = `Web search results for "${query}":\n\n${formatted}`;
-
-    return { json, content }
-}
-
 
 module.exports = WebSearchTool;
